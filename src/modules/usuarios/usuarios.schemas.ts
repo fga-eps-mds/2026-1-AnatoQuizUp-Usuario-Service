@@ -1,0 +1,21 @@
+import { z } from "zod";
+
+export const schemaBuscarAlunos = z.object({
+  busca: z.string().trim().min(1).optional(),
+  page: z.coerce.number().int().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional(),
+});
+
+export const schemaBuscarUsuariosPorIds = z.object({
+  ids: z
+    .string()
+    .trim()
+    .min(1)
+    .transform((ids) => ids.split(",").map((id) => id.trim()).filter(Boolean))
+    .refine((ids) => ids.length > 0, {
+      message: "Informe ao menos um id de usuario",
+    })
+    .refine((ids) => new Set(ids).size === ids.length, {
+      message: "A lista de ids nao pode conter valores duplicados",
+    }),
+});
