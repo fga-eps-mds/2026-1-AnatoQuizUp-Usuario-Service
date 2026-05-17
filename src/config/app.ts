@@ -5,9 +5,10 @@ import helmet from "helmet";
 import { criarOpcoesCors } from "@/config/cors";
 import { env } from "@/config/env";
 import { loggerHttp } from "@/config/logger";
-import { authRouter } from "@/modules/auth";
-import { exemploRouter } from "@/modules/exemplo";
-import { MENSAGENS } from "@/shared/constants/mensagens";
+import { authRouter } from "@/modules/auth";
+import { exemploRouter } from "@/modules/exemplo";
+import { usuariosRouter } from "@/modules/usuarios";
+import { MENSAGENS } from "@/shared/constants/mensagens";
 import { ErroAplicacao } from "@/shared/errors/erro-aplicacao";
 import { CodigoDeErro } from "@/shared/errors/codigos-de-erro";
 import { middlewareAutenticacao } from "@/shared/middlewares/autenticacao.middleware";
@@ -36,10 +37,11 @@ aplicacao.get("/health", (_request, response) => {
 // Toda chamada para /api/* precisa vir do BFF (X-Internal-Token).
 aplicacao.use("/api", middlewareTokenInterno);
 roteadorApi.use("/autenticacao", authRouter);
-roteadorApi.use(middlewareAutenticacao);
-roteadorApi.use("/exemplos", exemploRouter);
-roteadorApi.use("/admin", adminRouter);
-aplicacao.use("/api/v1", roteadorApi);
+roteadorApi.use(middlewareAutenticacao);
+roteadorApi.use("/exemplos", exemploRouter);
+roteadorApi.use("/admin", adminRouter);
+roteadorApi.use("/usuarios", usuariosRouter);
+aplicacao.use("/api/v1", roteadorApi);
 
 aplicacao.use((_request, _response, next) => {
   next(
