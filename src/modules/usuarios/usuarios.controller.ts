@@ -5,8 +5,10 @@ import type { RespostaApiSucesso, RespostaPaginada } from "@/shared/types/api.ty
 
 import type {
   BuscarAlunosQueryDto,
+  BuscarUsuarioPorIdParamsDto,
   BuscarUsuariosPorIdsQueryDto,
   ResumoUsuarioDto,
+  UsuarioPublicoDto,
 } from "./dto/usuario.types";
 import type { UsuariosService } from "./usuarios.service";
 
@@ -38,6 +40,23 @@ export class UsuariosController {
       return response.status(200).json({
         mensagem: MENSAGENS.usuariosEncontrados,
         dados: usuarios,
+      });
+    } catch (error) {
+      return next(error);
+    }
+  };
+
+  buscarPorIdPublico = async (
+    request: Request<BuscarUsuarioPorIdParamsDto>,
+    response: Response<RespostaApiSucesso<UsuarioPublicoDto>>,
+    next: NextFunction,
+  ) => {
+    try {
+      const usuario = await this.usuariosService.buscarPorIdPublico(request.params.id);
+
+      return response.status(200).json({
+        mensagem: MENSAGENS.usuarioEncontrado,
+        dados: usuario,
       });
     } catch (error) {
       return next(error);

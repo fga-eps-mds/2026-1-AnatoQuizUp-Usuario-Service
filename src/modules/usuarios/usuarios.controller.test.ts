@@ -3,7 +3,7 @@ import type { NextFunction, Request, Response } from "express";
 import { MENSAGENS } from "@/shared/constants/mensagens";
 import type { RespostaApiSucesso, RespostaPaginada } from "@/shared/types/api.types";
 
-import type { ResumoUsuarioDto } from "./dto/usuario.types";
+import type { ResumoUsuarioDto, UsuarioPublicoDto } from "./dto/usuario.types";
 import { UsuariosController } from "./usuarios.controller";
 import type { UsuariosService } from "./usuarios.service";
 
@@ -39,6 +39,7 @@ describe("UsuariosController", () => {
     service = {
       buscarAlunos: jest.fn(),
       buscarUsuariosPorIds: jest.fn(),
+      buscarPorIdPublico: jest.fn(),
     } as unknown as jest.Mocked<UsuariosService>;
     controller = new UsuariosController(service);
     jest.clearAllMocks();
@@ -91,6 +92,43 @@ describe("UsuariosController", () => {
     const { response } = criarResponseMock<RespostaApiSucesso<ResumoUsuarioDto[]>>();
 
     await controller.buscarPorIds(request, response, next);
+
+    expect(next).toHaveBeenCalledWith(erro);
+  });
+
+  test("buscarPorIdPublico responde com payload publico minimo", async () => {
+    const usuarioPublico: UsuarioPublicoDto = {
+      id: "prof-1",
+      nome: "Maria",
+      papel: "PROFESSOR",
+    };
+    service.buscarPorIdPublico.mockResolvedValue(usuarioPublico);
+
+    const request = {
+      params: { id: "prof-1" },
+    } as unknown as Request;
+    const { response, status, json } = criarResponseMock<RespostaApiSucesso<UsuarioPublicoDto>>();
+
+    await controller.buscarPorIdPublico(request, response, next);
+
+    expect(service.buscarPorIdPublico).toHaveBeenCalledWith("prof-1");
+    expect(status).toHaveBeenCalledWith(200);
+    expect(json).toHaveBeenCalledWith({
+      mensagem: MENSAGENS.usuarioEncontrado,
+      dados: usuarioPublico,
+    });
+  });
+
+  test("buscarPorIdPublico encaminha erro do service", async () => {
+    const erro = new Error("falha");
+    service.buscarPorIdPublico.mockRejectedValue(erro);
+
+    const request = {
+      params: { id: "x" },
+    } as unknown as Request;
+    const { response } = criarResponseMock<RespostaApiSucesso<UsuarioPublicoDto>>();
+
+    await controller.buscarPorIdPublico(request, response, next);
 
     expect(next).toHaveBeenCalledWith(erro);
   });
