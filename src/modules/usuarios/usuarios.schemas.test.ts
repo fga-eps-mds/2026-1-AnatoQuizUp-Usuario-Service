@@ -1,5 +1,6 @@
 import {
   schemaBuscarAlunos,
+  schemaBuscarUsuarioPorId,
   schemaBuscarUsuariosPorIds,
 } from "./usuarios.schemas";
 
@@ -33,5 +34,16 @@ describe("schemas usuarios", () => {
   test("schemaBuscarUsuariosPorIds rejeita ids ausentes ou duplicados", () => {
     expect(() => schemaBuscarUsuariosPorIds.parse({})).toThrow();
     expect(() => schemaBuscarUsuariosPorIds.parse({ ids: "aluno-1, aluno-1" })).toThrow();
+  });
+
+  test("schemaBuscarUsuarioPorId remove espacos do id", () => {
+    expect(schemaBuscarUsuarioPorId.parse({ id: " professor-1 " })).toEqual({
+      id: "professor-1",
+    });
+  });
+
+  test("schemaBuscarUsuarioPorId rejeita id vazio", () => {
+    expect(() => schemaBuscarUsuarioPorId.parse({ id: "   " })).toThrow();
+    expect(() => schemaBuscarUsuarioPorId.parse({})).toThrow();
   });
 });

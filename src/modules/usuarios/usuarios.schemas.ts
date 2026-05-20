@@ -19,3 +19,7 @@ export const schemaBuscarUsuariosPorIds = z.object({
       message: "A lista de ids nao pode conter valores duplicados",
     }),
 });
+
+export const schemaBuscarUsuarioPorId = z.object({
+  id: z.string().trim().min(1, "Id do usuario e obrigatorio"),
+});
