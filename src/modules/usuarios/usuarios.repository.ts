@@ -55,4 +55,18 @@ export class UsuariosRepository {
       orderBy: { nome: "asc" },
     });
   }
+
+  async buscarPorIdPublico(id: string) {
+    return prisma.usuario.findFirst({
+      where: {
+        id,
+        excluidoEm: null,
+      },
+      select: {
+        id: true,
+        nome: true,
+        perfil: true,
+      },
+    });
+  }
 }
