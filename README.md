@@ -35,8 +35,8 @@ Backend Auth do projeto **AnatoQuizUp**: autenticação, identidade, administra�
 ### 1. Clonar e entrar no repo
 
 ```powershell
-git clone https://github.com/fga-eps-mds/2026-1-AnatoQuizUp-Backend.git
-cd 2026-1-AnatoQuizUp-Backend
+git clone https://github.com/fga-eps-mds/2026-1-AnatoQuizUp-Usuario-Service.git
+cd 2026-1-AnatoQuizUp-Usuario-Service
 ```
 
 ### 2. Criar e preencher o `.env`
@@ -173,7 +173,7 @@ As rotas de questões não pertencem mais a este serviço; o BFF encaminha `/api
 ## Estrutura do projeto
 
 ```text
-2026-1-AnatoQuizUp-Backend/
+2026-1-AnatoQuizUp-Usuario-Service/
 ├── prisma/
 │   ├── migrations/
 │   ├── schema.prisma
