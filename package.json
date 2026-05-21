@@ -17,9 +17,12 @@
     "db:up": "docker compose up -d db",
     "db:down": "docker compose down"
   },
+  "prisma": {
+    "seed": "node dist/prisma/seed.js"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fga-eps-mds/2026-1-AnatoQuizUp-Backend.git"
+    "url": "git+https://github.com/fga-eps-mds/2026-1-AnatoQuizUp-Usuario-Service.git"
   },
   "engines": {
     "node": ">=24.0.0"
@@ -34,9 +37,9 @@
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/fga-eps-mds/2026-1-AnatoQuizUp-Backend/issues"
+    "url": "https://github.com/fga-eps-mds/2026-1-AnatoQuizUp-Usuario-Service/issues"
   },
-  "homepage": "https://github.com/fga-eps-mds/2026-1-AnatoQuizUp-Backend#readme",
+  "homepage": "https://github.com/fga-eps-mds/2026-1-AnatoQuizUp-Usuario-Service#readme",
   "dependencies": {
     "@getbrevo/brevo": "^5.0.4",
     "@prisma/client": "^6.17.1",
