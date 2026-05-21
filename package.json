@@ -17,6 +17,9 @@
     "db:up": "docker compose up -d db",
     "db:down": "docker compose down"
   },
+  "prisma": {
+    "seed": "node dist/prisma/seed.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fga-eps-mds/2026-1-AnatoQuizUp-Backend.git"
