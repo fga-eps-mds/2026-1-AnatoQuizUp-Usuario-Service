@@ -1,5 +1,7 @@
 import type { Usuario } from "@prisma/client";
 
+import { PAPEIS, type Papel } from "@/shared/constants/papeis";
+
 export type ResumoUsuarioDto = {
   id: string;
   nome: string;
@@ -12,6 +14,12 @@ export type ResumoUsuarioDto = {
   semestre: string | null;
 };
 
+export type UsuarioPublicoDto = {
+  id: string;
+  nome: string;
+  papel: Papel;
+};
+
 export type BuscarAlunosQueryDto = {
   busca?: string;
   page?: number;
@@ -22,6 +30,29 @@ export type BuscarUsuariosPorIdsQueryDto = {
   ids: string[];
 };
 
+export type BuscarUsuarioPorIdParamsDto = {
+  id: string;
+};
+
 export function converterParaResumoUsuario(usuario: ResumoUsuarioDto): ResumoUsuarioDto {
   return usuario;
+}
+
+export function converterPerfilParaPapel(perfil: Usuario["perfil"]): Papel {
+  if (perfil === "ADMIN") {
+    return PAPEIS.ADMINISTRADOR;
+  }
+  return perfil;
+}
+
+export function converterParaUsuarioPublico(usuario: {
+  id: string;
+  nome: string;
+  perfil: Usuario["perfil"];
+}): UsuarioPublicoDto {
+  return {
+    id: usuario.id,
+    nome: usuario.nome,
+    papel: converterPerfilParaPapel(usuario.perfil),
+  };
 }

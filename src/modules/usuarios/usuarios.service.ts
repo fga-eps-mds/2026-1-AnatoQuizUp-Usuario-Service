@@ -1,3 +1,6 @@
+import { MENSAGENS } from "@/shared/constants/mensagens";
+import { CodigoDeErro } from "@/shared/errors/codigos-de-erro";
+import { ErroAplicacao } from "@/shared/errors/erro-aplicacao";
 import type { RespostaPaginada } from "@/shared/types/api.types";
 import {
   montarMetadadosPaginacao,
@@ -7,8 +10,12 @@ import {
 import type {
   BuscarAlunosQueryDto,
   ResumoUsuarioDto,
+  UsuarioPublicoDto,
 } from "./dto/usuario.types";
-import { converterParaResumoUsuario } from "./dto/usuario.types";
+import {
+  converterParaResumoUsuario,
+  converterParaUsuarioPublico,
+} from "./dto/usuario.types";
 import type { UsuariosRepository } from "./usuarios.repository";
 
 export class UsuariosService {
@@ -29,5 +36,19 @@ export class UsuariosService {
   async buscarUsuariosPorIds(ids: string[]): Promise<ResumoUsuarioDto[]> {
     const usuarios = await this.usuariosRepository.buscarAlunosPorIds(ids);
     return usuarios.map(converterParaResumoUsuario);
+  }
+
+  async buscarPorIdPublico(id: string): Promise<UsuarioPublicoDto> {
+    const usuario = await this.usuariosRepository.buscarPorIdPublico(id);
+
+    if (!usuario) {
+      throw new ErroAplicacao({
+        codigoStatus: 404,
+        codigo: CodigoDeErro.NAO_ENCONTRADO,
+        mensagem: MENSAGENS.usuarioNaoEncontrado,
+      });
+    }
+
+    return converterParaUsuarioPublico(usuario);
   }
 }

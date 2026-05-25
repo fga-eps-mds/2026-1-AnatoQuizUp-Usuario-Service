@@ -7,6 +7,7 @@ jest.mock("@/config/db", () => ({
     $transaction: jest.fn(),
     usuario: {
       findMany: jest.fn(),
+      findFirst: jest.fn(),
       count: jest.fn(),
     },
   },
@@ -14,6 +15,7 @@ jest.mock("@/config/db", () => ({
 
 const transactionMock = prisma.$transaction as jest.Mock;
 const findManyMock = prisma.usuario.findMany as jest.Mock;
+const findFirstMock = prisma.usuario.findFirst as jest.Mock;
 const countMock = prisma.usuario.count as jest.Mock;
 
 const selectResumoUsuario = {
@@ -83,5 +85,30 @@ describe("UsuariosRepository", () => {
       select: selectResumoUsuario,
       orderBy: { nome: "asc" },
     });
+  });
+
+  test("buscarPorIdPublico retorna apenas id, nome e perfil de usuarios nao excluidos", async () => {
+    const usuario = { id: "professor-1", nome: "Maria", perfil: "PROFESSOR" };
+    findFirstMock.mockResolvedValue(usuario);
+
+    await expect(repository.buscarPorIdPublico("professor-1")).resolves.toBe(usuario);
+
+    expect(findFirstMock).toHaveBeenCalledWith({
+      where: {
+        id: "professor-1",
+        excluidoEm: null,
+      },
+      select: {
+        id: true,
+        nome: true,
+        perfil: true,
+      },
+    });
+  });
+
+  test("buscarPorIdPublico retorna null quando usuario nao existe", async () => {
+    findFirstMock.mockResolvedValue(null);
+
+    await expect(repository.buscarPorIdPublico("inexistente")).resolves.toBeNull();
   });
 });
