@@ -1,9 +1,22 @@
 import { prisma } from "@/config/db";
 import type { ParametrosPaginacao } from "@/shared/utils/paginacao.util";
 import type { Prisma } from "@prisma/client";
+import type { ListarAmigosQueryDto } from "./dto/request/listar_amigos_query_dto";
+
+const selectResumoAmigo = {
+  id: true,
+  nome: true,
+  nickname: true,
+  curso: true,
+  semestre: true,
+};
 
 export class AmizadesRepository {
-  async listarAmigos(usuario_id: string, paginacao: ParametrosPaginacao) {
+  async listarAmigos(
+    usuario_id: string,
+    query: ListarAmigosQueryDto,
+    paginacao: ParametrosPaginacao,
+  ) {
     const where: Prisma.AmizadeWhereInput = {
       statusAmizade: "ATIVO",
       excluidoEm: null,
@@ -17,27 +30,40 @@ export class AmizadesRepository {
       ],
     };
 
+    if (query.nome) {
+      where.AND = [
+        {
+          OR: [
+            {
+              usuarioOrigem: {
+                nome: {
+                  contains: query.nome,
+                  mode: "insensitive",
+                },
+              },
+            },
+            {
+              usuarioDestino: {
+                nome: {
+                  contains: query.nome,
+                  mode: "insensitive",
+                },
+              },
+            },
+          ],
+        },
+      ];
+    }
+
     const [data, total] = await prisma.$transaction([
       prisma.amizade.findMany({
         where,
         include: {
           usuarioOrigem: {
-            select: {
-              id: true,
-              nome: true,
-              nickname: true,
-              curso: true,
-              semestre: true,
-            },
+            select: selectResumoAmigo,
           },
           usuarioDestino: {
-            select: {
-              id: true,
-              nome: true,
-              nickname: true,
-              curso: true,
-              semestre: true,
-            },
+            select: selectResumoAmigo,
           },
         },
         skip: paginacao.skip,
@@ -65,13 +91,7 @@ export class AmizadesRepository {
     const [data, total] = await prisma.$transaction([
       prisma.usuario.findMany({
         where,
-        select: {
-          id: true,
-          nome: true,
-          nickname: true,
-          curso: true,
-          semestre: true,
-        },
+        select: selectResumoAmigo,
         skip: paginacao.skip,
         take: paginacao.limit,
         orderBy: { criadoEm: "desc" },
@@ -89,17 +109,16 @@ export class AmizadesRepository {
           usuarioDestinoId: usuario_destino_id,
         },
       },
-    })
+    });
   }
 
-  
   async buscarPorSolicitacaoId(solicitacao_id: string) {
     return prisma.amizade.findUnique({
       where: {
         id: solicitacao_id,
         excluidoEm: null,
       },
-    })
+    });
   }
 
   async enviarSolicitacao(usuario_id: string, usuario_destino_id: string) {
@@ -107,42 +126,51 @@ export class AmizadesRepository {
       data: {
         usuarioOrigemId: usuario_id,
         usuarioDestinoId: usuario_destino_id,
-      }
-    })
+      },
+    });
   }
 
-  
-  async listarConvitesRecebidos(usuario_id: string, paginacao: ParametrosPaginacao) {
+  async listarConvites(
+    usuario_id: string,
+    paginacao: ParametrosPaginacao,
+    seletor: "recebidos" | "enviados" = "recebidos",
+  ) {
     const where: Prisma.AmizadeWhereInput = {
       statusAmizade: "PENDENTE",
       excluidoEm: null,
-      usuarioDestinoId: usuario_id,
+      ...(seletor === "recebidos"
+        ? { usuarioDestinoId: usuario_id }
+        : { usuarioOrigemId: usuario_id }),
     };
+
+    const include =
+      seletor === "recebidos"
+        ? {
+            usuarioOrigem: {
+              select: selectResumoAmigo,
+            },
+          }
+        : {
+            usuarioDestino: {
+              select: selectResumoAmigo,
+            },
+          };
 
     const [data, total] = await prisma.$transaction([
       prisma.amizade.findMany({
         where,
-        include: {
-          usuarioOrigem: {
-            select: {
-              id: true,
-              nome: true,
-              nickname: true,
-              curso: true,
-              semestre: true,
-            },
-          },
-        },
+        include,
         skip: paginacao.skip,
         take: paginacao.limit,
         orderBy: { criadoEm: "desc" },
       }),
       prisma.amizade.count({ where }),
     ]);
+    console.log(`REPOSITORY: ${JSON.stringify(data)}`);
     return { data, total };
   }
 
-    async listarConvitesEnviados(usuario_id: string, paginacao: ParametrosPaginacao) {
+  async listarConvitesEnviados(usuario_id: string, paginacao: ParametrosPaginacao) {
     const where: Prisma.AmizadeWhereInput = {
       statusAmizade: "PENDENTE",
       excluidoEm: null,
@@ -154,13 +182,7 @@ export class AmizadesRepository {
         where,
         include: {
           usuarioDestino: {
-            select: {
-              id: true,
-              nome: true,
-              nickname: true,
-              curso: true,
-              semestre: true,
-            },
+            select: selectResumoAmigo,
           },
         },
         skip: paginacao.skip,
@@ -172,28 +194,15 @@ export class AmizadesRepository {
     return { data, total };
   }
 
-  
-  async aceitarSolicitacao(solicitacao_id: string) {
+  async processarSolicitacao(solicitacao_id: string, acao: "aceitar" | "recusar") {
     return prisma.amizade.update({
       where: {
         id: solicitacao_id,
         excluidoEm: null,
       },
       data: {
-        statusAmizade: "ATIVO",
-      }
-    });
-  }
-
-  async recusarSolicitacao(solicitacao_id: string) {
-    return prisma.amizade.update({
-      where: {
-        id: solicitacao_id,
-        excluidoEm: null,
+        statusAmizade: acao === "aceitar" ? "ATIVO" : "RECUSADO",
       },
-      data: {
-        statusAmizade: "RECUSADO",
-      }
     });
   }
 
@@ -205,20 +214,19 @@ export class AmizadesRepository {
       },
       data: {
         excluidoEm: new Date(Date.now()),
-      }
+      },
     });
   }
 
   async mudarVisibilidade(usuario_id: string, visibilidade: boolean) {
-
     return prisma.usuario.update({
       where: {
         id: usuario_id,
         excluidoEm: null,
       },
       data: {
-        visivel:visibilidade,
-      }
-    })
+        visivel: visibilidade,
+      },
+    });
   }
 }

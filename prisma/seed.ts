@@ -137,7 +137,7 @@ async function main() {
     },
   });
 
-    const aluno5 = await prisma.usuario.upsert({
+  const aluno5 = await prisma.usuario.upsert({
     where: { email: "clara@seed.com" },
     update: {},
     create: {
@@ -194,7 +194,19 @@ async function main() {
         usuarioOrigemId: aluno1.id,
         usuarioDestinoId: aluno2.id,
         statusAmizade: StatusAmizade.ATIVO,
-      }
+      },
+
+      {
+        usuarioOrigemId: aluno1.id,
+        usuarioDestinoId: aluno4.id,
+        statusAmizade: StatusAmizade.PENDENTE,
+      },
+
+      {
+        usuarioOrigemId: aluno5.id,
+        usuarioDestinoId: aluno1.id,
+        statusAmizade: StatusAmizade.PENDENTE,
+      },
     ],
     skipDuplicates: true,
   });

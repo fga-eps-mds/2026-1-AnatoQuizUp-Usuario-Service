@@ -3,17 +3,14 @@ import { Router } from "express";
 import { PAPEIS } from "@/shared/constants/papeis";
 import { middlewarePapeis } from "@/shared/middlewares/papeis.middleware";
 import { validarRequisicao } from "@/shared/middlewares/validacao.middleware";
-import {
-  schemaBuscarAlunosAmizade,
-  schemaSolicitarAmizade,
-} from "./amizade.schema";
+import { schemaBuscarAlunosAmizade, schemaSolicitarAmizade } from "./amizade.schema";
 import { AmizadesController } from "./amizade.controller";
 import { AmizadesRepository } from "./amizade.repository";
 import { AmizadesService } from "./amizade.service";
 import { UsuariosRepository } from "../usuarios/usuarios.repository";
 
 const amizadesRepository = new AmizadesRepository();
-const usuarioRepository = new UsuariosRepository()
+const usuarioRepository = new UsuariosRepository();
 const amizadesService = new AmizadesService(amizadesRepository, usuarioRepository);
 const amizadesController = new AmizadesController(amizadesService);
 
@@ -21,7 +18,12 @@ const amizadeRouter = Router();
 const permiteAlunosEAdmin = middlewarePapeis(PAPEIS.ALUNO, PAPEIS.ADMINISTRADOR);
 
 // lista amigos
-amizadeRouter.get("/", permiteAlunosEAdmin, validarRequisicao(schemaBuscarAlunosAmizade, "query"),amizadesController.listarAmigos);
+amizadeRouter.get(
+  "/",
+  permiteAlunosEAdmin,
+  validarRequisicao(schemaBuscarAlunosAmizade, "query"),
+  amizadesController.listarAmigos,
+);
 
 // busca possíveis amigos
 amizadeRouter.get(
@@ -32,14 +34,19 @@ amizadeRouter.get(
 );
 
 // enviar solicitação
-amizadeRouter.post("/", permiteAlunosEAdmin, validarRequisicao(schemaSolicitarAmizade, "body"), amizadesController.enviarSolicitacao);
+amizadeRouter.post(
+  "/",
+  permiteAlunosEAdmin,
+  validarRequisicao(schemaSolicitarAmizade, "body"),
+  amizadesController.enviarSolicitacao,
+);
 
 // lista convites recebidos
 amizadeRouter.get(
   "/convites/recebidos",
   permiteAlunosEAdmin,
   validarRequisicao(schemaBuscarAlunosAmizade, "query"),
-  amizadesController.listarConvitesRecebidos,
+  amizadesController.listarConvites,
 );
 
 // lista convites enviados
@@ -47,7 +54,7 @@ amizadeRouter.get(
   "/convites/enviados",
   permiteAlunosEAdmin,
   validarRequisicao(schemaBuscarAlunosAmizade, "query"),
-  amizadesController.listarConvitesEnviados,
+  amizadesController.listarConvites,
 );
 
 //  aceitar convite
@@ -55,7 +62,7 @@ amizadeRouter.patch(
   "/aceitar",
   permiteAlunosEAdmin,
   validarRequisicao(schemaSolicitarAmizade, "body"),
-  amizadesController.aceitarSolicitacao,
+  amizadesController.processarSolicitacao,
 );
 
 //  recusar convite
@@ -63,17 +70,18 @@ amizadeRouter.patch(
   "/recusar",
   permiteAlunosEAdmin,
   validarRequisicao(schemaSolicitarAmizade, "body"),
-  amizadesController.recusarSolicitacao,
+  amizadesController.processarSolicitacao,
 );
 
 //  desfazer amizade
-amizadeRouter.delete("/", permiteAlunosEAdmin, validarRequisicao(schemaSolicitarAmizade, "body"), amizadesController.desfazerAmizade);
+amizadeRouter.delete(
+  "/",
+  permiteAlunosEAdmin,
+  validarRequisicao(schemaSolicitarAmizade, "body"),
+  amizadesController.desfazerAmizade,
+);
 
 //  toggle visibilidade
-amizadeRouter.patch(
-  "/visibilidade",
-  permiteAlunosEAdmin,
-  amizadesController.mudarVisibilidade,
-);
+amizadeRouter.patch("/visibilidade", permiteAlunosEAdmin, amizadesController.mudarVisibilidade);
 
 export { amizadeRouter };

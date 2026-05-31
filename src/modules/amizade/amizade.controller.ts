@@ -41,7 +41,7 @@ export class AmizadesController {
       return next(error);
     }
   };
-  
+
   enviarSolicitacao = async (
     request: Request<SolicitacaoDto>,
     response: Response,
@@ -54,37 +54,22 @@ export class AmizadesController {
       );
       return response.status(200).json({
         mensagem: "Solicitação enviada com sucesso",
-        solcitacao: solicitacao, 
+        solcitacao: solicitacao,
       });
     } catch (error) {
       return next(error);
     }
   };
 
-  listarConvitesRecebidos = async (
+  listarConvites = async (
     request: Request<unknown, unknown, unknown, ListarAmigosQueryDto>,
     response: Response<RespostaPaginada<ResumoAmizadeDto>>,
     next: NextFunction,
   ) => {
     try {
-      const amigos = await this.amizadeService.listarConvitesRecebidos(
+      const amigos = await this.amizadeService.listarConvites(
         request.query,
-        request.usuario?.id ?? "",
-      );
-      return response.status(200).json(amigos);
-    } catch (error) {
-      return next(error);
-    }
-  };
-  
-  listarConvitesEnviados = async (
-    request: Request<unknown, unknown, unknown, ListarAmigosQueryDto>,
-    response: Response<RespostaPaginada<ResumoAmizadeDto>>,
-    next: NextFunction,
-  ) => {
-    try {
-      const amigos = await this.amizadeService.listarConvitesEnviados(
-        request.query,
+        request.path,
         request.usuario?.id ?? "",
       );
       return response.status(200).json(amigos);
@@ -93,73 +78,45 @@ export class AmizadesController {
     }
   };
 
-  
-  aceitarSolicitacao = async (
+  processarSolicitacao = async (
     request: Request<SolicitacaoDto>,
     response: Response,
     next: NextFunction,
   ) => {
     try {
-      await this.amizadeService.aceitarSolicitacao(
+      await this.amizadeService.processarSolicitacao(
         request.body,
         request.usuario?.id ?? "",
+        request.path,
       );
       return response.status(200).json({
-        mensagem: "Solicitação aceita com sucesso",
+        mensagem: "Solicitação processada com sucesso",
       });
     } catch (error) {
       return next(error);
     }
   };
 
-  recusarSolicitacao = async (
-    request: Request<SolicitacaoDto>,
-    response: Response,
-    next: NextFunction,
-  ) => {
-    try {
-        await this.amizadeService.recusarSolicitacao(
-        request.body,
-        request.usuario?.id ?? "",
-      );
-      return response.status(200).json({
-        mensagem: "Solicitação recusada com sucesso",
-      });
-    } catch (error) {
-      return next(error);
-    }
-  };
-  
   desfazerAmizade = async (
     request: Request<SolicitacaoDto>,
     response: Response,
     next: NextFunction,
   ) => {
     try {
-      await this.amizadeService.desfazerAmizade(
-        request.body,
-        request.usuario?.id ?? "",
-      );
+      await this.amizadeService.desfazerAmizade(request.body, request.usuario?.id ?? "");
       return response.status(200).json({
-        mensagem: "Amizade desfeita com sucesso"
+        mensagem: "Amizade desfeita com sucesso",
       });
     } catch (error) {
       return next(error);
     }
   };
 
-  
-  mudarVisibilidade = async (
-    request: Request,
-    response: Response,
-    next: NextFunction,
-  ) => {
+  mudarVisibilidade = async (request: Request, response: Response, next: NextFunction) => {
     try {
-      await this.amizadeService.mudarVisibilidade(
-        request.usuario?.id ?? "",
-      );
+      await this.amizadeService.mudarVisibilidade(request.usuario?.id ?? "");
       return response.status(200).json({
-        mensagem: "Visibilidade desfeita com sucesso"
+        mensagem: "Visibilidade desfeita com sucesso",
       });
     } catch (error) {
       return next(error);

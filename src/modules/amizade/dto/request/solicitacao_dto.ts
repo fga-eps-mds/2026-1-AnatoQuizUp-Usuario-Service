@@ -1,3 +1,3 @@
 export type SolicitacaoDto = {
-    id?: string
-}
+  id?: string;
+};

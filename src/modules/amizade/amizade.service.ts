@@ -17,7 +17,7 @@ import type { UsuariosRepository } from "../usuarios/usuarios.repository";
 export class AmizadesService {
   constructor(
     private readonly amizadesRepository: AmizadesRepository,
-    private readonly usuariosRepository: UsuariosRepository
+    private readonly usuariosRepository: UsuariosRepository,
   ) {}
 
   async listarAmigos(
@@ -33,29 +33,25 @@ export class AmizadesService {
     }
 
     const paginacao = resolverParametrosPaginacao(query);
-    const { data, total } = await this.amizadesRepository.listarAmigos(usuario_id, paginacao);
+    const { data, total } = await this.amizadesRepository.listarAmigos(
+      usuario_id,
+      query,
+      paginacao,
+    );
 
-    const amigos = data.map((amizade)=>{
-      const amigo = amizade.usuarioOrigemId === usuario_id ? amizade.usuarioDestino : amizade.usuarioOrigem;
-      return {
-        id: amizade.id,
-        criadoEm: amizade.criadoEm,
-        atualizadoEm: amizade.atualizadoEm,
-        excluidoEm: amizade.excluidoEm,
-        usuarioOrigemId: amizade.usuarioOrigemId,
-        usuarioDestinoId: amizade.usuarioDestinoId,
-        statusAmizade: amizade.statusAmizade,
-        amigo,
-      }
+    const amigos = data.map((amizade) => {
+      const amigo =
+        amizade.usuarioOrigemId === usuario_id ? amizade.usuarioDestino : amizade.usuarioOrigem;
+
+      return this.montarResumoAmizade(amizade, amigo);
     });
-    
+
     return {
       dados: amigos,
       metadados: montarMetadadosPaginacao(paginacao, total),
     };
   }
 
-  
   async buscarAmigos(
     query: BuscarAmigosQueryDto,
     usuario_id: string | undefined,
@@ -78,20 +74,19 @@ export class AmizadesService {
     }
 
     const paginacao = resolverParametrosPaginacao(query);
-    const { data, total } = await this.amizadesRepository.buscarAmigos(usuario_id, nome_busca, paginacao);
+    const { data, total } = await this.amizadesRepository.buscarAmigos(
+      usuario_id,
+      nome_busca,
+      paginacao,
+    );
 
-    
     return {
       dados: data,
       metadados: montarMetadadosPaginacao(paginacao, total),
     };
   }
 
-  
-  async enviarSolicitacao(
-    data: SolicitacaoDto,
-    usuario_id: string | undefined,
-  ): Promise<Amizade> {
+  async enviarSolicitacao(data: SolicitacaoDto, usuario_id: string | undefined): Promise<Amizade> {
     if (usuario_id === "" || usuario_id === undefined) {
       throw new ErroAplicacao({
         codigoStatus: 401,
@@ -109,33 +104,38 @@ export class AmizadesService {
       });
     }
 
-    const solicitacao_ja_existe = await this.amizadesRepository.buscarSolicitacao(usuario_id, id_destino);
+    const solicitacao_ja_existe = await this.amizadesRepository.buscarSolicitacao(
+      usuario_id,
+      id_destino,
+    );
 
-    if(solicitacao_ja_existe) {
-      if(solicitacao_ja_existe.statusAmizade === "PENDENTE" || solicitacao_ja_existe.statusAmizade === "RECUSADO"){
-
+    if (solicitacao_ja_existe) {
+      if (
+        solicitacao_ja_existe.statusAmizade === "PENDENTE" ||
+        solicitacao_ja_existe.statusAmizade === "RECUSADO"
+      ) {
         throw new ErroAplicacao({
           codigoStatus: 400,
           codigo: CodigoDeErro.SOLICITACAO_JA_ENVIADA,
           mensagem: MENSAGENS.solicitacaoDeAmizadeJaEnviada,
         });
-      }
-      else{
-          throw new ErroAplicacao({
-            codigoStatus: 400,
-            codigo: CodigoDeErro.JA_SAO_AMIGOS,
-            mensagem: MENSAGENS.jaSaoAmigos,
-          });
+      } else {
+        throw new ErroAplicacao({
+          codigoStatus: 400,
+          codigo: CodigoDeErro.JA_SAO_AMIGOS,
+          mensagem: MENSAGENS.jaSaoAmigos,
+        });
       }
     }
 
     const envio = await this.amizadesRepository.enviarSolicitacao(usuario_id, id_destino);
-    
+
     return envio;
   }
 
-  async listarConvitesRecebidos(
+  async listarConvites(
     query: ListarAmigosQueryDto,
+    path: string,
     usuario_id: string | undefined,
   ): Promise<RespostaPaginada<ResumoAmizadeDto>> {
     if (usuario_id === "" || usuario_id === undefined) {
@@ -147,66 +147,31 @@ export class AmizadesService {
     }
 
     const paginacao = resolverParametrosPaginacao(query);
-    const { data, total } = await this.amizadesRepository.listarConvitesRecebidos(usuario_id, paginacao);
+    const seletor = path === "/convites/recebidos" ? "recebidos" : "enviados";
+    const { data, total } = await this.amizadesRepository.listarConvites(
+      usuario_id,
+      paginacao,
+      seletor,
+    );
 
-    const convites_recebidos = data.map((convite)=>{
-      return {
-        id: convite.id,
-        criadoEm: convite.criadoEm,
-        atualizadoEm: convite.atualizadoEm,
-        excluidoEm: convite.excluidoEm,
-        usuarioOrigemId: convite.usuarioOrigemId,
-        usuarioDestinoId: convite.usuarioDestinoId,
-        statusAmizade: convite.statusAmizade,
-        amigo: convite.usuarioOrigem,
-      }
+    const convites = data.map((convite) => {
+      const amigo = seletor === "recebidos" ? convite.usuarioOrigem : convite.usuarioDestino;
+
+      return this.montarResumoAmizade(convite, amigo);
     });
-    
+
     return {
-      dados: convites_recebidos,
+      dados: convites,
       metadados: montarMetadadosPaginacao(paginacao, total),
     };
   }
 
-    async listarConvitesEnviados(
-    query: ListarAmigosQueryDto,
-    usuario_id: string | undefined,
-  ): Promise<RespostaPaginada<ResumoAmizadeDto>> {
-    if (usuario_id === "" || usuario_id === undefined) {
-      throw new ErroAplicacao({
-        codigoStatus: 401,
-        codigo: CodigoDeErro.NAO_AUTORIZADO,
-        mensagem: MENSAGENS.usuarioAutenticadoEncontrado,
-      });
-    }
-
-    const paginacao = resolverParametrosPaginacao(query);
-    const { data, total } = await this.amizadesRepository.listarConvitesEnviados(usuario_id, paginacao);
-
-    const convites_recebidos = data.map((convite)=>{
-      return {
-        id: convite.id,
-        criadoEm: convite.criadoEm,
-        atualizadoEm: convite.atualizadoEm,
-        excluidoEm: convite.excluidoEm,
-        usuarioOrigemId: convite.usuarioOrigemId,
-        usuarioDestinoId: convite.usuarioDestinoId,
-        statusAmizade: convite.statusAmizade,
-        amigo: convite.usuarioDestino,
-      }
-    });
-    
-    return {
-      dados: convites_recebidos,
-      metadados: montarMetadadosPaginacao(paginacao, total),
-    };
-  }
-
-  async aceitarSolicitacao(
+  async processarSolicitacao(
     data: SolicitacaoDto,
     usuario_id: string | undefined,
+    path: string,
   ): Promise<Amizade> {
-    if (usuario_id === "" || usuario_id === undefined) {
+    if (!usuario_id) {
       throw new ErroAplicacao({
         codigoStatus: 401,
         codigo: CodigoDeErro.NAO_AUTORIZADO,
@@ -215,7 +180,8 @@ export class AmizadesService {
     }
 
     const solicitacao_id = data.id;
-    if (solicitacao_id === "" || solicitacao_id === undefined) {
+
+    if (!solicitacao_id) {
       throw new ErroAplicacao({
         codigoStatus: 401,
         codigo: CodigoDeErro.REQUISICAO_INVALIDA,
@@ -225,60 +191,19 @@ export class AmizadesService {
 
     const solicitacao = await this.amizadesRepository.buscarPorSolicitacaoId(solicitacao_id);
 
-    if(!solicitacao){
+    if (!solicitacao) {
       throw new ErroAplicacao({
         codigoStatus: 400,
         codigo: CodigoDeErro.SOLICITACAO_NAO_ENCONTRADA,
         mensagem: MENSAGENS.solicitacaoDeAmizadeNaoEncontrada,
-      });      
+      });
     }
 
-    const aceite = await this.amizadesRepository.aceitarSolicitacao(solicitacao_id);
-    
-    return aceite;
+    const acao = path === "/aceitar" ? "aceitar" : "recusar";
+    return this.amizadesRepository.processarSolicitacao(solicitacao_id, acao);
   }
 
-  async recusarSolicitacao(
-    data: SolicitacaoDto,
-    usuario_id: string | undefined,
-  ): Promise<Amizade> {
-    if (usuario_id === "" || usuario_id === undefined) {
-      throw new ErroAplicacao({
-        codigoStatus: 401,
-        codigo: CodigoDeErro.NAO_AUTORIZADO,
-        mensagem: MENSAGENS.usuarioAutenticadoEncontrado,
-      });
-    }
-
-    const solicitacao_id = data.id;
-    if (solicitacao_id === "" || solicitacao_id === undefined) {
-      throw new ErroAplicacao({
-        codigoStatus: 401,
-        codigo: CodigoDeErro.REQUISICAO_INVALIDA,
-        mensagem: MENSAGENS.fornecaUmaSolicitacao,
-      });
-    }
-
-    const solicitacao = await this.amizadesRepository.buscarPorSolicitacaoId(solicitacao_id);
-
-    if(!solicitacao){
-      throw new ErroAplicacao({
-        codigoStatus: 400,
-        codigo: CodigoDeErro.SOLICITACAO_NAO_ENCONTRADA,
-        mensagem: MENSAGENS.solicitacaoDeAmizadeNaoEncontrada,
-      });      
-    }
-
-    const aceite = await this.amizadesRepository.recusarSolicitacao(solicitacao_id);
-    
-    return aceite;
-  } 
-
-  
-  async desfazerAmizade(
-    data: SolicitacaoDto,
-    usuario_id: string | undefined,
-  ): Promise<Amizade> {
+  async desfazerAmizade(data: SolicitacaoDto, usuario_id: string | undefined): Promise<Amizade> {
     if (usuario_id === "" || usuario_id === undefined) {
       throw new ErroAplicacao({
         codigoStatus: 401,
@@ -298,21 +223,13 @@ export class AmizadesService {
 
     const amizade = await this.amizadesRepository.buscarPorSolicitacaoId(amizade_id);
 
-    if(!amizade){
+    if (amizade?.statusAmizade !== "ATIVO") {
       throw new ErroAplicacao({
         codigoStatus: 400,
         codigo: CodigoDeErro.SOLICITACAO_NAO_ENCONTRADA,
         mensagem: MENSAGENS.solicitacaoDeAmizadeNaoEncontrada,
-      });      
-    }
-    else if(amizade.statusAmizade !== "ATIVO"){
-      throw new ErroAplicacao({
-        codigoStatus: 400,
-        codigo: CodigoDeErro.SOLICITACAO_NAO_ENCONTRADA,
-        mensagem: MENSAGENS.solicitacaoDeAmizadeNaoEncontrada,
-      });   
-    }
-    else if(amizade.usuarioDestinoId !== usuario_id && amizade.usuarioOrigemId !== usuario_id){
+      });
+    } else if (amizade.usuarioDestinoId !== usuario_id && amizade.usuarioOrigemId !== usuario_id) {
       throw new ErroAplicacao({
         codigoStatus: 401,
         codigo: CodigoDeErro.NAO_AUTORIZADO,
@@ -321,13 +238,11 @@ export class AmizadesService {
     }
 
     const amizade_desfeita = await this.amizadesRepository.desfazerAmizade(amizade_id);
-    
+
     return amizade_desfeita;
   }
-  
-  async mudarVisibilidade(
-    usuario_id: string | undefined,
-  ) {
+
+  async mudarVisibilidade(usuario_id: string | undefined) {
     if (usuario_id === "" || usuario_id === undefined) {
       throw new ErroAplicacao({
         codigoStatus: 401,
@@ -337,16 +252,32 @@ export class AmizadesService {
     }
     const usuario = await this.usuariosRepository.buscarAlunoPorId(usuario_id);
 
-    if(!usuario){
+    if (!usuario) {
       throw new ErroAplicacao({
         codigoStatus: 401,
         codigo: CodigoDeErro.NAO_AUTORIZADO,
         mensagem: MENSAGENS.usuarioAutenticadoEncontrado,
-      });     
+      });
     }
-    const futura_visibilidade = usuario.visivel == true ? false : true;
-    const visibilidade_alterada = await this.amizadesRepository.mudarVisibilidade(usuario_id, futura_visibilidade);
-    
+    const futura_visibilidade = !usuario.visivel;
+    const visibilidade_alterada = await this.amizadesRepository.mudarVisibilidade(
+      usuario_id,
+      futura_visibilidade,
+    );
+
     return visibilidade_alterada;
+  }
+
+  private montarResumoAmizade(amizade: any, amigo: any): ResumoAmizadeDto {
+    return {
+      id: amizade.id,
+      criadoEm: amizade.criadoEm,
+      atualizadoEm: amizade.atualizadoEm,
+      excluidoEm: amizade.excluidoEm,
+      usuarioOrigemId: amizade.usuarioOrigemId,
+      usuarioDestinoId: amizade.usuarioDestinoId,
+      statusAmizade: amizade.statusAmizade,
+      amigo,
+    };
   }
 }
