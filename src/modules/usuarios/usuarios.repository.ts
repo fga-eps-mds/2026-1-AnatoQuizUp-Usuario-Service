@@ -56,6 +56,21 @@ export class UsuariosRepository {
     });
   }
 
+  
+  async buscarAlunoPorId(id: string) {
+    return prisma.usuario.findUnique({
+      where: {
+        id: id,
+        perfil: "ALUNO",
+        excluidoEm: null,
+      },
+      select: {
+        ...selecionarResumoUsuario, 
+        visivel: true
+      },
+    });
+  }
+
   async buscarPorIdPublico(id: string) {
     return prisma.usuario.findFirst({
       where: {

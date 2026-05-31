@@ -48,4 +48,10 @@ export const MENSAGENS = {
   autenticacaoNaoImplementada: "O middleware de autenticacao ainda nao foi implementado.",
   permissaoPorPapelNaoImplementada:
     "O middleware de permissao por papel ainda nao foi implementado.",
+  fornecaUmNomeDeUsuario: "Forneça um nome de usuário para a busca",
+  fornecaUmaSolicitacao: "Forneça uma solicitação de amizade",
+  solicitacaoDeAmizadeJaEnviada: "Solicitação já enviada",
+  solicitacaoDeAmizadeNaoEncontrada: "Solicitação não encontrada",
+  jaSaoAmigos: "Vocês já são amigos",
+  desfazerAmizadeRecusado: "Você não faz parte da amizade",
 } as const;

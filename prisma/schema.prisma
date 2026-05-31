@@ -127,5 +127,6 @@ model Amizade {
   usuarioOrigem  Usuario @relation(name: "usuario_origem", fields: [usuarioOrigemId], references: [id], onDelete: Cascade, map: "usuario_origem_fk")
   usuarioDestino Usuario @relation(name: "usuario_destino", fields: [usuarioDestinoId], references: [id], onDelete: Cascade, map: "usuario_destino_fk")
 
+  @@unique([usuarioOrigemId, usuarioDestinoId])
   @@map("amizades")
 }
