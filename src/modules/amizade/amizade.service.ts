@@ -14,6 +14,10 @@ import type { SolicitacaoDto } from "./dto/request/solicitacao_dto";
 import type { Amizade } from "@prisma/client";
 import type { UsuariosRepository } from "../usuarios/usuarios.repository";
 
+type AmizadeRow = Awaited<ReturnType<AmizadesRepository["listarAmigos"]>>["data"][number];
+
+type ConviteRow = Awaited<ReturnType<AmizadesRepository["listarConvites"]>>["data"][number];
+
 export class AmizadesService {
   constructor(
     private readonly amizadesRepository: AmizadesRepository,
@@ -268,7 +272,10 @@ export class AmizadesService {
     return visibilidade_alterada;
   }
 
-  private montarResumoAmizade(amizade: any, amigo: any): ResumoAmizadeDto {
+  private montarResumoAmizade(
+    amizade: AmizadeRow | ConviteRow,
+    amigo: AmizadeRow["usuarioOrigem"] | AmizadeRow["usuarioDestino"],
+  ): ResumoAmizadeDto {
     return {
       id: amizade.id,
       criadoEm: amizade.criadoEm,

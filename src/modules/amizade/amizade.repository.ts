@@ -166,7 +166,6 @@ export class AmizadesRepository {
       }),
       prisma.amizade.count({ where }),
     ]);
-    console.log(`REPOSITORY: ${JSON.stringify(data)}`);
     return { data, total };
   }
 

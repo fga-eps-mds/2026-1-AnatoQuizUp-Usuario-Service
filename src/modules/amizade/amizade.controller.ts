@@ -54,7 +54,7 @@ export class AmizadesController {
       );
       return response.status(200).json({
         mensagem: "Solicitação enviada com sucesso",
-        solcitacao: solicitacao,
+        solicitacao: solicitacao,
       });
     } catch (error) {
       return next(error);
@@ -116,7 +116,7 @@ export class AmizadesController {
     try {
       await this.amizadeService.mudarVisibilidade(request.usuario?.id ?? "");
       return response.status(200).json({
-        mensagem: "Visibilidade desfeita com sucesso",
+        mensagem: "Visibilidade alterada com sucesso",
       });
     } catch (error) {
       return next(error);
