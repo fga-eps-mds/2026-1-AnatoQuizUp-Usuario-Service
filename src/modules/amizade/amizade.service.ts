@@ -68,19 +68,10 @@ export class AmizadesService {
       });
     }
 
-    const nome_busca = query.nome;
-    if (nome_busca === "" || nome_busca === undefined) {
-      throw new ErroAplicacao({
-        codigoStatus: 401,
-        codigo: CodigoDeErro.REQUISICAO_INVALIDA,
-        mensagem: MENSAGENS.fornecaUmNomeDeUsuario,
-      });
-    }
-
     const paginacao = resolverParametrosPaginacao(query);
     const { data, total } = await this.amizadesRepository.buscarAmigos(
       usuario_id,
-      nome_busca,
+      query,
       paginacao,
     );
 

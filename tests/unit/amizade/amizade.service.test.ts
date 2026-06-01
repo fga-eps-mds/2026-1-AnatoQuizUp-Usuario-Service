@@ -113,15 +113,7 @@ describe("AmizadesService", () => {
       });
     });
 
-    test("deve lançar erro quando nome não informado", async () => {
-      await expect(service.buscarAmigos({}, "usuario-id")).rejects.toMatchObject({
-        codigoStatus: 401,
-        codigo: CodigoDeErro.REQUISICAO_INVALIDA,
-        message: MENSAGENS.fornecaUmNomeDeUsuario,
-      });
-    });
-
-    test("deve buscar amigos", async () => {
+    test("deve buscar amigos por nome", async () => {
       repository.buscarAmigos.mockResolvedValue({
         data: [criarResumoUsuario("1")],
         total: 1,
@@ -129,11 +121,36 @@ describe("AmizadesService", () => {
 
       const resultado = await service.buscarAmigos({ nome: "Usuário" }, "usuario-id");
 
-      expect(repository.buscarAmigos).toHaveBeenCalledWith("usuario-id", "Usuário", {
-        limit: 10,
-        page: 1,
-        skip: 0,
+      expect(repository.buscarAmigos).toHaveBeenCalledWith(
+        "usuario-id",
+        { nome: "Usuário" },
+        {
+          limit: 10,
+          page: 1,
+          skip: 0,
+        },
+      );
+
+      expect(resultado.dados).toHaveLength(1);
+    });
+
+    test("deve buscar amigos por nickname", async () => {
+      repository.buscarAmigos.mockResolvedValue({
+        data: [criarResumoUsuario("1")],
+        total: 1,
       });
+
+      const resultado = await service.buscarAmigos({ nickname: "Usuário" }, "usuario-id");
+
+      expect(repository.buscarAmigos).toHaveBeenCalledWith(
+        "usuario-id",
+        { nickname: "Usuário" },
+        {
+          limit: 10,
+          page: 1,
+          skip: 0,
+        },
+      );
 
       expect(resultado.dados).toHaveLength(1);
     });

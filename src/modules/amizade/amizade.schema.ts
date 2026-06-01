@@ -8,6 +8,7 @@ export const schemaBuscarAmizades = z.object({
 
 export const schemaBuscarAlunosAmizade = z.object({
   nome: z.string().trim().min(1).optional(),
+  nickname: z.string().trim().min(1).optional(),
   page: z.coerce.number().int().min(1).optional(),
   limit: z.coerce.number().int().min(1).max(100).optional(),
 });

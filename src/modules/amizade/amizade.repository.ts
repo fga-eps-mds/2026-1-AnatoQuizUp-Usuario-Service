@@ -2,6 +2,7 @@ import { prisma } from "@/config/db";
 import type { ParametrosPaginacao } from "@/shared/utils/paginacao.util";
 import type { Prisma } from "@prisma/client";
 import type { ListarAmigosQueryDto } from "./dto/request/listar_amigos_query_dto";
+import type { BuscarAmigosQueryDto } from "./dto/request/buscar_amigos_query_dto";
 
 const selectResumoAmigo = {
   id: true,
@@ -30,27 +31,24 @@ export class AmizadesRepository {
       ],
     };
 
-    if (query.nome) {
+    if (query.nome || query.nickname) {
+      const filtroUsuario: Prisma.UsuarioWhereInput = {
+        ...(query.nome && {
+          nome: {
+            contains: query.nome,
+            mode: "insensitive",
+          },
+        }),
+        ...(query.nickname && {
+          nickname: {
+            contains: query.nickname,
+            mode: "insensitive",
+          },
+        }),
+      };
       where.AND = [
         {
-          OR: [
-            {
-              usuarioOrigem: {
-                nome: {
-                  contains: query.nome,
-                  mode: "insensitive",
-                },
-              },
-            },
-            {
-              usuarioDestino: {
-                nome: {
-                  contains: query.nome,
-                  mode: "insensitive",
-                },
-              },
-            },
-          ],
+          OR: [{ usuarioOrigem: filtroUsuario }, { usuarioDestino: filtroUsuario }],
         },
       ];
     }
@@ -75,18 +73,26 @@ export class AmizadesRepository {
     return { data, total };
   }
 
-  async buscarAmigos(usuario_id: string, nome_busca: string, paginacao: ParametrosPaginacao) {
+  async buscarAmigos(
+    usuario_id: string,
+    query: BuscarAmigosQueryDto,
+    paginacao: ParametrosPaginacao,
+  ) {
     const where: Prisma.UsuarioWhereInput = {
       perfil: "ALUNO",
       status: "ATIVO",
       visivel: true,
       excluidoEm: null,
       id: { not: usuario_id },
-      nome: {
-        contains: nome_busca,
-        mode: "insensitive",
-      },
     };
+
+    if (query.nome) {
+      where.nome = { contains: query.nome, mode: "insensitive" };
+    }
+
+    if (query.nickname) {
+      where.nickname = { contains: query.nickname, mode: "insensitive" };
+    }
 
     const [data, total] = await prisma.$transaction([
       prisma.usuario.findMany({

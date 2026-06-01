@@ -40,9 +40,9 @@ describe("AmizadesRepository", () => {
       expect(prisma.amizade.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            statusAmizade: "ATIVO",
+            OR: [{ usuarioOrigemId: "usuario-1" }, { usuarioDestinoId: "usuario-1" }],
             excluidoEm: null,
-            OR: expect.any(Array),
+            statusAmizade: "ATIVO",
           }),
         }),
       );
@@ -57,9 +57,57 @@ describe("AmizadesRepository", () => {
 
       expect(prisma.amizade.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({
-            AND: expect.any(Array),
-          }),
+          where: {
+            AND: [
+              {
+                OR: [
+                  { usuarioOrigem: { nome: { contains: "joao", mode: "insensitive" } } },
+                  { usuarioDestino: { nome: { contains: "joao", mode: "insensitive" } } },
+                ],
+              },
+            ],
+            OR: [{ usuarioOrigemId: "usuario-1" }, { usuarioDestinoId: "usuario-1" }],
+            excluidoEm: null,
+            statusAmizade: "ATIVO",
+          },
+        }),
+      );
+    });
+
+    test("deve aplicar filtro por nome e nickname", async () => {
+      transactionMock.mockResolvedValue([[], 0]);
+
+      await repository.listarAmigos(
+        "usuario-1",
+        { nome: "joao", nickname: "J040" },
+        { skip: 0, limit: 10, page: 1 },
+      );
+
+      expect(prisma.amizade.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            AND: [
+              {
+                OR: [
+                  {
+                    usuarioOrigem: {
+                      nickname: { contains: "J040", mode: "insensitive" },
+                      nome: { contains: "joao", mode: "insensitive" },
+                    },
+                  },
+                  {
+                    usuarioDestino: {
+                      nickname: { contains: "J040", mode: "insensitive" },
+                      nome: { contains: "joao", mode: "insensitive" },
+                    },
+                  },
+                ],
+              },
+            ],
+            OR: [{ usuarioOrigemId: "usuario-1" }, { usuarioDestinoId: "usuario-1" }],
+            excluidoEm: null,
+            statusAmizade: "ATIVO",
+          },
         }),
       );
     });
@@ -69,13 +117,37 @@ describe("AmizadesRepository", () => {
     test("deve buscar amigos filtrando por nome", async () => {
       transactionMock.mockResolvedValue([[], 0]);
 
-      await repository.buscarAmigos("usuario-1", "ana", { skip: 0, limit: 5, page: 1 });
+      await repository.buscarAmigos("usuario-1", { nome: "ana" }, { skip: 0, limit: 5, page: 1 });
 
       expect(prisma.usuario.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             nome: {
               contains: "ana",
+              mode: "insensitive",
+            },
+            id: { not: "usuario-1" },
+          }),
+        }),
+      );
+
+      expect(prisma.usuario.count).toHaveBeenCalled();
+    });
+
+    test("deve buscar amigos filtrando por nickname", async () => {
+      transactionMock.mockResolvedValue([[], 0]);
+
+      await repository.buscarAmigos(
+        "usuario-1",
+        { nickname: "aninha" },
+        { skip: 0, limit: 5, page: 1 },
+      );
+
+      expect(prisma.usuario.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            nickname: {
+              contains: "aninha",
               mode: "insensitive",
             },
             id: { not: "usuario-1" },
@@ -141,7 +213,15 @@ describe("AmizadesRepository", () => {
             statusAmizade: "PENDENTE",
           }),
           include: expect.objectContaining({
-            usuarioOrigem: expect.any(Object),
+            usuarioOrigem: {
+              select: {
+                id: true,
+                nome: true,
+                nickname: true,
+                curso: true,
+                semestre: true,
+              },
+            },
           }),
         }),
       );
@@ -159,7 +239,15 @@ describe("AmizadesRepository", () => {
             statusAmizade: "PENDENTE",
           }),
           include: expect.objectContaining({
-            usuarioDestino: expect.any(Object),
+            usuarioDestino: {
+              select: {
+                id: true,
+                nome: true,
+                nickname: true,
+                curso: true,
+                semestre: true,
+              },
+            },
           }),
         }),
       );
