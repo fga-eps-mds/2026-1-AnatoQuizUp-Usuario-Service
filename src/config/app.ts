@@ -27,7 +27,7 @@ import { middlewareTokenInterno } from "@/shared/middlewares/token-interno.middl
 import { middlewareTratamentoErros } from "@/shared/middlewares/tratamento-erros.middleware";
 
 import { adminRouter } from "@/modules/admin/admin.routes";
-import { amizadeRouter } from "@/modules/amizade/amizade.router";
+import { amizadeRouter } from "@/modules/amizade/amizade.routes";
 
 
 
