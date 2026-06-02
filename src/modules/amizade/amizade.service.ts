@@ -22,7 +22,7 @@ export class AmizadesService {
   constructor(
     private readonly amizadesRepository: AmizadesRepository,
     private readonly usuariosRepository: UsuariosRepository,
-  ) {}
+  ) { }
 
   async listarAmigos(
     query: ListarAmigosQueryDto,
@@ -159,10 +159,10 @@ export class AmizadesService {
 
     const envio = solicitacao_ja_existe?.excluidoEm
       ? await this.amizadesRepository.reabrirSolicitacao(
-          solicitacao_ja_existe.id,
-          usuario_id,
-          id_destino,
-        )
+        solicitacao_ja_existe.id,
+        usuario_id,
+        id_destino,
+      )
       : await this.amizadesRepository.enviarSolicitacao(usuario_id, id_destino);
 
     return envio;

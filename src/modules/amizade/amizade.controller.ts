@@ -12,7 +12,7 @@ type MudarVisibilidadeDto = {
 };
 
 export class AmizadesController {
-  constructor(private readonly amizadeService: AmizadesService) {}
+  constructor(private readonly amizadeService: AmizadesService) { }
 
   listarAmigos = async (
     request: Request<unknown, unknown, unknown, ListarAmigosQueryDto>,

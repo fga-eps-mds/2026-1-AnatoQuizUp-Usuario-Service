@@ -108,6 +108,7 @@ function converterParaUsuarioSessaoDto(usuario: UsuarioSessao): UsuarioSessaoDto
     aprovadoEm: usuario.aprovadoEm ? usuario.aprovadoEm.toISOString() : null,
     createdAt: usuario.createdAt.toISOString(),
     updatedAt: usuario.updatedAt.toISOString(),
+    visivel: usuario.visivel,
   };
 }
 
