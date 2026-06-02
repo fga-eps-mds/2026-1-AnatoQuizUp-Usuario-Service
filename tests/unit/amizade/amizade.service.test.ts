@@ -10,6 +10,7 @@ function criarRepositoryMock() {
     buscarAmigos: jest.fn<AmizadesRepository["buscarAmigos"]>(),
     buscarSolicitacao: jest.fn<AmizadesRepository["buscarSolicitacao"]>(),
     enviarSolicitacao: jest.fn<AmizadesRepository["enviarSolicitacao"]>(),
+    reabrirSolicitacao: jest.fn<AmizadesRepository["reabrirSolicitacao"]>(),
     listarConvites: jest.fn<AmizadesRepository["listarConvites"]>(),
     buscarPorSolicitacaoId: jest.fn<AmizadesRepository["buscarPorSolicitacaoId"]>(),
     processarSolicitacao: jest.fn<AmizadesRepository["processarSolicitacao"]>(),
@@ -318,6 +319,26 @@ describe("AmizadesService", () => {
 
       expect(usuariosRepository.buscarAlunoPorId).toHaveBeenCalledWith("destino-id");
       expect(repository.enviarSolicitacao).toHaveBeenCalledWith("usuario-id", "destino-id");
+    });
+
+    test("deve reabrir solicitação quando amizade anterior foi desfeita", async () => {
+      const amizadeExcluida = {
+        ...criarAmizade("ATIVO"),
+        excluidoEm: new Date(),
+      };
+
+      repository.buscarSolicitacao.mockResolvedValue(amizadeExcluida);
+      usuariosRepository.buscarAlunoPorId.mockResolvedValue(criarAlunoVisibilidade());
+      repository.reabrirSolicitacao.mockResolvedValue(criarAmizade("PENDENTE"));
+
+      await service.enviarSolicitacao({ id: "destino-id" }, "usuario-id");
+
+      expect(repository.reabrirSolicitacao).toHaveBeenCalledWith(
+        amizadeExcluida.id,
+        "usuario-id",
+        "destino-id",
+      );
+      expect(repository.enviarSolicitacao).not.toHaveBeenCalled();
     });
   });
 

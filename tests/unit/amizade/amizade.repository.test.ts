@@ -207,6 +207,24 @@ describe("AmizadesRepository", () => {
     });
   });
 
+  describe("reabrirSolicitacao", () => {
+    test("deve reabrir solicitação de amizade excluída", async () => {
+      await repository.reabrirSolicitacao("sol-1", "u1", "u2");
+
+      expect(prisma.amizade.update).toHaveBeenCalledWith({
+        where: {
+          id: "sol-1",
+        },
+        data: {
+          usuarioOrigemId: "u1",
+          usuarioDestinoId: "u2",
+          statusAmizade: "PENDENTE",
+          excluidoEm: null,
+        },
+      });
+    });
+  });
+
   describe("listarConvites", () => {
     test("deve listar convites recebidos", async () => {
       transactionMock.mockResolvedValue([[], 0]);

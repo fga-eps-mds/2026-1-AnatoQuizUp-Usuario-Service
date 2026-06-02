@@ -112,7 +112,7 @@ export class AmizadesService {
       id_destino,
     );
 
-    if (solicitacao_ja_existe) {
+    if (solicitacao_ja_existe && !solicitacao_ja_existe.excluidoEm) {
       if (
         solicitacao_ja_existe.statusAmizade === "PENDENTE" ||
         solicitacao_ja_existe.statusAmizade === "RECUSADO"
@@ -157,7 +157,13 @@ export class AmizadesService {
       });
     }
 
-    const envio = await this.amizadesRepository.enviarSolicitacao(usuario_id, id_destino);
+    const envio = solicitacao_ja_existe?.excluidoEm
+      ? await this.amizadesRepository.reabrirSolicitacao(
+          solicitacao_ja_existe.id,
+          usuario_id,
+          id_destino,
+        )
+      : await this.amizadesRepository.enviarSolicitacao(usuario_id, id_destino);
 
     return envio;
   }

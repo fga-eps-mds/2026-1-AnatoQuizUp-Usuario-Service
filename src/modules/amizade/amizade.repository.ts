@@ -142,6 +142,24 @@ export class AmizadesRepository {
     });
   }
 
+  async reabrirSolicitacao(
+    solicitacao_id: string,
+    usuario_id: string,
+    usuario_destino_id: string,
+  ) {
+    return prisma.amizade.update({
+      where: {
+        id: solicitacao_id,
+      },
+      data: {
+        usuarioOrigemId: usuario_id,
+        usuarioDestinoId: usuario_destino_id,
+        statusAmizade: "PENDENTE",
+        excluidoEm: null,
+      },
+    });
+  }
+
   async listarConvites(
     usuario_id: string,
     paginacao: ParametrosPaginacao,
