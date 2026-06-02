@@ -40,6 +40,12 @@ enum NivelEducacional {
   OUTRO
 }
 
+enum StatusAmizade {
+  PENDENTE
+  ATIVO
+  RECUSADO
+}
+
 model Usuario {
   id       String  @id @default(cuid())
   nome     String
@@ -47,8 +53,9 @@ model Usuario {
   email    String  @unique
   senha    String
 
-  perfil PerfilUsuario
-  status StatusUsuario @default(ATIVO)
+  perfil  PerfilUsuario
+  status  StatusUsuario @default(ATIVO)
+  visivel Boolean       @default(true)
 
   instituicao      String?
   curso            String?
@@ -68,9 +75,11 @@ model Usuario {
   refreshTokens          RefreshToken[]
   tokensRedefinicaoSenha TokenRedefinicaoSenha[]
 
-  criadoEm     DateTime  @default(now())
-  atualizadoEm DateTime  @updatedAt
-  excluidoEm   DateTime?
+  criadoEm          DateTime  @default(now())
+  atualizadoEm      DateTime  @updatedAt
+  excluidoEm        DateTime?
+  amizadesEnviadas  Amizade[] @relation("usuario_origem")
+  amizadesRecebidas Amizade[] @relation("usuario_destino")
 
   @@map("usuarios")
 }
@@ -101,4 +110,23 @@ model TokenRedefinicaoSenha {
   usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   @@map("tokens_redefinicao_senha")
+}
+
+model Amizade {
+  id String @id @default(cuid())
+
+  usuarioOrigemId  String
+  usuarioDestinoId String
+
+  statusAmizade StatusAmizade @default(PENDENTE)
+
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
+  excluidoEm   DateTime?
+
+  usuarioOrigem  Usuario @relation(name: "usuario_origem", fields: [usuarioOrigemId], references: [id], onDelete: Cascade, map: "usuario_origem_fk")
+  usuarioDestino Usuario @relation(name: "usuario_destino", fields: [usuarioDestinoId], references: [id], onDelete: Cascade, map: "usuario_destino_fk")
+
+  @@unique([usuarioOrigemId, usuarioDestinoId])
+  @@map("amizades")
 }

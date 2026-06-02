@@ -32,6 +32,7 @@ export type UsuarioSessao = {
   aprovadoEm: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  visivel: boolean;
 };
 
 export type RefreshTokenSessao = {
@@ -64,6 +65,7 @@ type UsuarioSessaoBanco = {
   aprovadoEm: Date | null;
   criadoEm: Date;
   atualizadoEm: Date;
+  visivel: boolean;
 };
 
 type RefreshTokenSessaoBanco = {
@@ -109,6 +111,7 @@ function converterUsuarioBanco(usuario: UsuarioSessaoBanco): UsuarioSessao {
     aprovadoEm: usuario.aprovadoEm,
     createdAt: usuario.criadoEm,
     updatedAt: usuario.atualizadoEm,
+    visivel: usuario.visivel,
   };
 }
 
@@ -137,7 +140,8 @@ export class SessaoRepository {
         "aprovadoPorId",
         "aprovadoEm",
         "criadoEm",
-        "atualizadoEm"
+        "atualizadoEm",
+        visivel
       FROM usuarios
       WHERE email = ${email}
       LIMIT 1
@@ -172,7 +176,8 @@ export class SessaoRepository {
         "aprovadoPorId",
         "aprovadoEm",
         "criadoEm",
-        "atualizadoEm"
+        "atualizadoEm",
+        visivel
       FROM usuarios
       WHERE id = ${id}
       LIMIT 1

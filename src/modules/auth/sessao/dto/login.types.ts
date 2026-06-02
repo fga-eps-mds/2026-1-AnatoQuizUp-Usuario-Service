@@ -34,6 +34,7 @@ export type UsuarioSessaoDto = {
   aprovadoEm: string | null;
   createdAt: string;
   updatedAt: string;
+  visivel: boolean;
 };
 
 export type RespostaLoginDto = {
