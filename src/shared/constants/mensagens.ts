@@ -55,6 +55,7 @@ export const MENSAGENS = {
   fornecaUmaSolicitacao: "Forneça uma solicitação de amizade",
   solicitacaoDeAmizadeJaEnviada: "Solicitação já enviada",
   solicitacaoDeAmizadeNaoEncontrada: "Solicitação não encontrada",
+  processarSolicitacaoRecusado: "Apenas o destinatario pode aceitar ou recusar a solicitacao.",
   jaSaoAmigos: "Vocês já são amigos",
   desfazerAmizadeRecusado: "Você não faz parte da amizade",
 } as const;

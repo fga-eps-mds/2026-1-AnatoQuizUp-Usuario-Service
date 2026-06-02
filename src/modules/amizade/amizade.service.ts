@@ -228,6 +228,22 @@ export class AmizadesService {
       });
     }
 
+    if (solicitacao.statusAmizade !== "PENDENTE") {
+      throw new ErroAplicacao({
+        codigoStatus: 400,
+        codigo: CodigoDeErro.SOLICITACAO_NAO_ENCONTRADA,
+        mensagem: MENSAGENS.solicitacaoDeAmizadeNaoEncontrada,
+      });
+    }
+
+    if (solicitacao.usuarioDestinoId !== usuario_id) {
+      throw new ErroAplicacao({
+        codigoStatus: 401,
+        codigo: CodigoDeErro.NAO_AUTORIZADO,
+        mensagem: MENSAGENS.processarSolicitacaoRecusado,
+      });
+    }
+
     const acao = path === "/aceitar" ? "aceitar" : "recusar";
     return this.amizadesRepository.processarSolicitacao(solicitacao_id, acao);
   }

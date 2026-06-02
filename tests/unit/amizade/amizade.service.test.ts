@@ -406,12 +406,40 @@ describe("AmizadesService", () => {
       });
     });
 
+    test("deve lançar erro quando solicitação não está pendente", async () => {
+      repository.buscarPorSolicitacaoId.mockResolvedValue(criarAmizade("ATIVO"));
+
+      await expect(
+        service.processarSolicitacao({ id: "1" }, "destino-id", "/aceitar"),
+      ).rejects.toMatchObject({
+        codigoStatus: 400,
+        codigo: CodigoDeErro.SOLICITACAO_NAO_ENCONTRADA,
+        message: MENSAGENS.solicitacaoDeAmizadeNaoEncontrada,
+      });
+
+      expect(repository.processarSolicitacao).not.toHaveBeenCalled();
+    });
+
+    test("deve lançar erro quando usuário não é destinatário da solicitação", async () => {
+      repository.buscarPorSolicitacaoId.mockResolvedValue(criarAmizade("PENDENTE"));
+
+      await expect(
+        service.processarSolicitacao({ id: "1" }, "origem-id", "/aceitar"),
+      ).rejects.toMatchObject({
+        codigoStatus: 401,
+        codigo: CodigoDeErro.NAO_AUTORIZADO,
+        message: MENSAGENS.processarSolicitacaoRecusado,
+      });
+
+      expect(repository.processarSolicitacao).not.toHaveBeenCalled();
+    });
+
     test("deve aceitar solicitação", async () => {
       repository.buscarPorSolicitacaoId.mockResolvedValue(criarAmizade("PENDENTE"));
 
       repository.processarSolicitacao.mockResolvedValue(criarAmizade("ATIVO"));
 
-      await service.processarSolicitacao({ id: "1" }, "usuario-id", "/aceitar");
+      await service.processarSolicitacao({ id: "1" }, "destino-id", "/aceitar");
 
       expect(repository.processarSolicitacao).toHaveBeenCalledWith("1", "aceitar");
     });
@@ -421,7 +449,7 @@ describe("AmizadesService", () => {
 
       repository.processarSolicitacao.mockResolvedValue(criarAmizade("RECUSADO"));
 
-      await service.processarSolicitacao({ id: "1" }, "usuario-id", "/recusar");
+      await service.processarSolicitacao({ id: "1" }, "destino-id", "/recusar");
 
       expect(repository.processarSolicitacao).toHaveBeenCalledWith("1", "recusar");
     });
