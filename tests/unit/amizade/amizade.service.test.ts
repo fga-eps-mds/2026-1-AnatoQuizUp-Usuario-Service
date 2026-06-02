@@ -215,6 +215,25 @@ describe("AmizadesService", () => {
       });
     });
 
+    test("deve lançar erro para solicitação pendente na direção inversa", async () => {
+      repository.buscarSolicitacao.mockResolvedValue({
+        ...criarAmizade("PENDENTE"),
+        usuarioOrigemId: "destino-id",
+        usuarioDestinoId: "usuario-id",
+      });
+
+      await expect(
+        service.enviarSolicitacao({ id: "destino-id" }, "usuario-id"),
+      ).rejects.toMatchObject({
+        codigoStatus: 400,
+        codigo: CodigoDeErro.SOLICITACAO_JA_ENVIADA,
+        message: MENSAGENS.solicitacaoDeAmizadeJaEnviada,
+      });
+
+      expect(usuariosRepository.buscarAlunoPorId).not.toHaveBeenCalled();
+      expect(repository.enviarSolicitacao).not.toHaveBeenCalled();
+    });
+
     test("deve lançar erro para solicitação recusada existente", async () => {
       repository.buscarSolicitacao.mockResolvedValue(criarAmizade("RECUSADO"));
 

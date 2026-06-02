@@ -108,12 +108,18 @@ export class AmizadesRepository {
   }
 
   async buscarSolicitacao(usuario_id: string, usuario_destino_id: string) {
-    return prisma.amizade.findUnique({
+    return prisma.amizade.findFirst({
       where: {
-        usuarioOrigemId_usuarioDestinoId: {
-          usuarioOrigemId: usuario_id,
-          usuarioDestinoId: usuario_destino_id,
-        },
+        OR: [
+          {
+            usuarioOrigemId: usuario_id,
+            usuarioDestinoId: usuario_destino_id,
+          },
+          {
+            usuarioOrigemId: usuario_destino_id,
+            usuarioDestinoId: usuario_id,
+          },
+        ],
       },
     });
   }

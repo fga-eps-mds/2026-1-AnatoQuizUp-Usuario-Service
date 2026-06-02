@@ -9,6 +9,7 @@ jest.mock("@/config/db", () => ({
       findMany: jest.fn(),
       count: jest.fn(),
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
     },
@@ -160,15 +161,21 @@ describe("AmizadesRepository", () => {
   });
 
   describe("buscarSolicitacao", () => {
-    test("deve buscar solicitação entre usuários", async () => {
+    test("deve buscar solicitação entre usuários nas duas direções", async () => {
       await repository.buscarSolicitacao("u1", "u2");
 
-      expect(prisma.amizade.findUnique).toHaveBeenCalledWith({
+      expect(prisma.amizade.findFirst).toHaveBeenCalledWith({
         where: {
-          usuarioOrigemId_usuarioDestinoId: {
-            usuarioOrigemId: "u1",
-            usuarioDestinoId: "u2",
-          },
+          OR: [
+            {
+              usuarioOrigemId: "u1",
+              usuarioDestinoId: "u2",
+            },
+            {
+              usuarioOrigemId: "u2",
+              usuarioDestinoId: "u1",
+            },
+          ],
         },
       });
     });
