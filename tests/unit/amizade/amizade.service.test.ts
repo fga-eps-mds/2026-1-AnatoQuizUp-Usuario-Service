@@ -517,7 +517,7 @@ describe("AmizadesService", () => {
 
   describe("mudarVisibilidade", () => {
     test("deve lançar erro quando usuário não informado", async () => {
-      await expect(service.mudarVisibilidade(undefined)).rejects.toMatchObject({
+      await expect(service.mudarVisibilidade(undefined, false)).rejects.toMatchObject({
         codigoStatus: 401,
         codigo: CodigoDeErro.NAO_AUTORIZADO,
         message: MENSAGENS.usuarioAutenticadoEncontrado,
@@ -527,14 +527,14 @@ describe("AmizadesService", () => {
     test("deve lançar erro quando usuário não encontrado", async () => {
       usuariosRepository.buscarAlunoPorId.mockResolvedValue(null);
 
-      await expect(service.mudarVisibilidade("usuario-id")).rejects.toMatchObject({
+      await expect(service.mudarVisibilidade("usuario-id", false)).rejects.toMatchObject({
         codigoStatus: 401,
         codigo: CodigoDeErro.NAO_AUTORIZADO,
         message: MENSAGENS.usuarioAutenticadoEncontrado,
       });
     });
 
-    test("deve inverter visibilidade", async () => {
+    test("deve alterar visibilidade para valor informado", async () => {
       usuariosRepository.buscarAlunoPorId.mockResolvedValue({
         id: "usuario-id",
         visivel: true,
@@ -542,9 +542,22 @@ describe("AmizadesService", () => {
 
       repository.mudarVisibilidade.mockResolvedValue({});
 
-      await service.mudarVisibilidade("usuario-id");
+      await service.mudarVisibilidade("usuario-id", false);
 
       expect(repository.mudarVisibilidade).toHaveBeenCalledWith("usuario-id", false);
+    });
+
+    test("deve ativar visibilidade explicitamente sem inverter estado", async () => {
+      usuariosRepository.buscarAlunoPorId.mockResolvedValue({
+        id: "usuario-id",
+        visivel: false,
+      });
+
+      repository.mudarVisibilidade.mockResolvedValue({});
+
+      await service.mudarVisibilidade("usuario-id", true);
+
+      expect(repository.mudarVisibilidade).toHaveBeenCalledWith("usuario-id", true);
     });
   });
 });

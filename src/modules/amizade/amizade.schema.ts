@@ -17,6 +17,10 @@ export const schemaSolicitarAmizade = z.object({
   id: z.string().trim().min(1, "Id do usuario e obrigatorio"),
 });
 
+export const schemaMudarVisibilidade = z.object({
+  visivel: z.boolean(),
+});
+
 export const schemaBuscarAmizadePorUsuarioId = z.object({
   id: z.string().trim().min(1, "Id do usuario e obrigatorio"),
   busca: z.string().trim().min(1).optional(),

@@ -1,8 +1,9 @@
 import {
   schemaBuscarAmizades,
   schemaBuscarAlunosAmizade,
-  schemaSolicitarAmizade,
   schemaBuscarAmizadePorUsuarioId,
+  schemaMudarVisibilidade,
+  schemaSolicitarAmizade,
 } from "@/modules/amizade/amizade.schema";
 
 describe("schemas de amizade", () => {
@@ -233,6 +234,38 @@ describe("schemas de amizade", () => {
       const resultado = schemaBuscarAmizadePorUsuarioId.safeParse({
         id: "usuario-1",
         page: 1.7,
+      });
+
+      expect(resultado.success).toBe(false);
+    });
+  });
+
+  describe("schemaMudarVisibilidade", () => {
+    test("deve validar visibilidade verdadeira", () => {
+      const resultado = schemaMudarVisibilidade.safeParse({
+        visivel: true,
+      });
+
+      expect(resultado.success).toBe(true);
+    });
+
+    test("deve validar visibilidade falsa", () => {
+      const resultado = schemaMudarVisibilidade.safeParse({
+        visivel: false,
+      });
+
+      expect(resultado.success).toBe(true);
+    });
+
+    test("deve rejeitar visibilidade ausente", () => {
+      const resultado = schemaMudarVisibilidade.safeParse({});
+
+      expect(resultado.success).toBe(false);
+    });
+
+    test("deve rejeitar visibilidade com tipo invalido", () => {
+      const resultado = schemaMudarVisibilidade.safeParse({
+        visivel: "false",
       });
 
       expect(resultado.success).toBe(false);

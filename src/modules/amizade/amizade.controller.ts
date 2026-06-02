@@ -7,6 +7,10 @@ import type { AmizadesService } from "./amizade.service";
 import type { BuscarAmigosQueryDto } from "./dto/request/buscar_amigos_query_dto";
 import type { SolicitacaoDto } from "./dto/request/solicitacao_dto";
 
+type MudarVisibilidadeDto = {
+  visivel: boolean;
+};
+
 export class AmizadesController {
   constructor(private readonly amizadeService: AmizadesService) {}
 
@@ -112,9 +116,16 @@ export class AmizadesController {
     }
   };
 
-  mudarVisibilidade = async (request: Request, response: Response, next: NextFunction) => {
+  mudarVisibilidade = async (
+    request: Request<unknown, unknown, MudarVisibilidadeDto>,
+    response: Response,
+    next: NextFunction,
+  ) => {
     try {
-      await this.amizadeService.mudarVisibilidade(request.usuario?.id ?? "");
+      await this.amizadeService.mudarVisibilidade(
+        request.usuario?.id ?? "",
+        request.body.visivel,
+      );
       return response.status(200).json({
         mensagem: "Visibilidade alterada com sucesso",
       });

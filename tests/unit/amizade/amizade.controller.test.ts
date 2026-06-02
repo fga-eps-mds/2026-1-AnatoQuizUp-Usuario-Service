@@ -297,6 +297,9 @@ describe("Testa Amizades Controller", () => {
   describe("mudarVisibilidade", () => {
     test("deve alterar visibilidade com sucesso", async () => {
       const request = {
+        body: {
+          visivel: false,
+        },
         usuario: {
           id: "usuario-1",
         },
@@ -306,7 +309,7 @@ describe("Testa Amizades Controller", () => {
 
       await controller.mudarVisibilidade(request, response, next);
 
-      expect(amizadeService.mudarVisibilidade).toHaveBeenCalledWith("usuario-1");
+      expect(amizadeService.mudarVisibilidade).toHaveBeenCalledWith("usuario-1", false);
 
       expect(status).toHaveBeenCalledWith(200);
 
@@ -320,7 +323,11 @@ describe("Testa Amizades Controller", () => {
 
       amizadeService.mudarVisibilidade.mockRejectedValue(erro);
 
-      const request = {} as Request;
+      const request = {
+        body: {
+          visivel: false,
+        },
+      } as Request;
 
       const { response } = criarResponseMock();
       const nextMock = jest.fn();

@@ -3,7 +3,11 @@ import { Router } from "express";
 import { PAPEIS } from "@/shared/constants/papeis";
 import { middlewarePapeis } from "@/shared/middlewares/papeis.middleware";
 import { validarRequisicao } from "@/shared/middlewares/validacao.middleware";
-import { schemaBuscarAlunosAmizade, schemaSolicitarAmizade } from "./amizade.schema";
+import {
+  schemaBuscarAlunosAmizade,
+  schemaMudarVisibilidade,
+  schemaSolicitarAmizade,
+} from "./amizade.schema";
 import { AmizadesController } from "./amizade.controller";
 import { AmizadesRepository } from "./amizade.repository";
 import { AmizadesService } from "./amizade.service";
@@ -81,7 +85,12 @@ amizadeRouter.delete(
   amizadesController.desfazerAmizade,
 );
 
-//  toggle visibilidade
-amizadeRouter.patch("/visibilidade", permiteAlunosEAdmin, amizadesController.mudarVisibilidade);
+//  alterar visibilidade
+amizadeRouter.patch(
+  "/visibilidade",
+  permiteAlunosEAdmin,
+  validarRequisicao(schemaMudarVisibilidade, "body"),
+  amizadesController.mudarVisibilidade,
+);
 
 export { amizadeRouter };

@@ -293,7 +293,7 @@ export class AmizadesService {
     return amizade_desfeita;
   }
 
-  async mudarVisibilidade(usuario_id: string | undefined) {
+  async mudarVisibilidade(usuario_id: string | undefined, visivel: boolean) {
     if (usuario_id === "" || usuario_id === undefined) {
       throw new ErroAplicacao({
         codigoStatus: 401,
@@ -310,10 +310,9 @@ export class AmizadesService {
         mensagem: MENSAGENS.usuarioAutenticadoEncontrado,
       });
     }
-    const futura_visibilidade = !usuario.visivel;
     const visibilidade_alterada = await this.amizadesRepository.mudarVisibilidade(
       usuario_id,
-      futura_visibilidade,
+      visivel,
     );
 
     return visibilidade_alterada;
