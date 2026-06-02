@@ -99,6 +99,14 @@ export class AmizadesService {
       });
     }
 
+    if (id_destino === usuario_id) {
+      throw new ErroAplicacao({
+        codigoStatus: 400,
+        codigo: CodigoDeErro.SOLICITACAO_PARA_SI_MESMO,
+        mensagem: MENSAGENS.solicitacaoParaSiMesmo,
+      });
+    }
+
     const solicitacao_ja_existe = await this.amizadesRepository.buscarSolicitacao(
       usuario_id,
       id_destino,
@@ -121,6 +129,32 @@ export class AmizadesService {
           mensagem: MENSAGENS.jaSaoAmigos,
         });
       }
+    }
+
+    const usuario_destino = await this.usuariosRepository.buscarAlunoPorId(id_destino);
+
+    if (!usuario_destino) {
+      throw new ErroAplicacao({
+        codigoStatus: 404,
+        codigo: CodigoDeErro.USUARIO_DESTINO_INDISPONIVEL,
+        mensagem: MENSAGENS.usuarioDestinoIndisponivel,
+      });
+    }
+
+    if (usuario_destino.status !== "ATIVO") {
+      throw new ErroAplicacao({
+        codigoStatus: 400,
+        codigo: CodigoDeErro.USUARIO_DESTINO_INDISPONIVEL,
+        mensagem: MENSAGENS.usuarioDestinoInativo,
+      });
+    }
+
+    if (!usuario_destino.visivel) {
+      throw new ErroAplicacao({
+        codigoStatus: 400,
+        codigo: CodigoDeErro.USUARIO_DESTINO_INDISPONIVEL,
+        mensagem: MENSAGENS.usuarioDestinoIndisponivel,
+      });
     }
 
     const envio = await this.amizadesRepository.enviarSolicitacao(usuario_id, id_destino);

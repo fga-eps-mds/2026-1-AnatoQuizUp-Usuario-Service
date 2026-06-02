@@ -48,6 +48,24 @@ function criarResumoUsuario(id: string) {
   };
 }
 
+function criarAlunoVisibilidade(
+  overrides: Partial<Awaited<ReturnType<UsuariosRepository["buscarAlunoPorId"]>>> = {},
+) {
+  return {
+    id: "destino-id",
+    nome: "Usuário Destino",
+    nickname: "destino",
+    email: "destino@aluno.unb.br",
+    perfil: "ALUNO" as const,
+    status: "ATIVO" as const,
+    instituicao: "UnB",
+    curso: "Medicina",
+    semestre: "5",
+    visivel: true,
+    ...overrides,
+  };
+}
+
 describe("AmizadesService", () => {
   let repository: jest.Mocked<AmizadesRepository>;
   let usuariosRepository: jest.Mocked<UsuariosRepository>;
@@ -173,6 +191,19 @@ describe("AmizadesService", () => {
       });
     });
 
+    test("deve lançar erro ao enviar solicitação para si mesmo", async () => {
+      await expect(
+        service.enviarSolicitacao({ id: "usuario-id" }, "usuario-id"),
+      ).rejects.toMatchObject({
+        codigoStatus: 400,
+        codigo: CodigoDeErro.SOLICITACAO_PARA_SI_MESMO,
+        message: MENSAGENS.solicitacaoParaSiMesmo,
+      });
+
+      expect(repository.buscarSolicitacao).not.toHaveBeenCalled();
+      expect(repository.enviarSolicitacao).not.toHaveBeenCalled();
+    });
+
     test("deve lançar erro para solicitação pendente", async () => {
       repository.buscarSolicitacao.mockResolvedValue(criarAmizade("PENDENTE"));
       await expect(
@@ -208,13 +239,65 @@ describe("AmizadesService", () => {
       });
     });
 
+    test("deve lançar erro quando usuário destino não existe ou não é aluno", async () => {
+      repository.buscarSolicitacao.mockResolvedValue(null);
+      usuariosRepository.buscarAlunoPorId.mockResolvedValue(null);
+
+      await expect(
+        service.enviarSolicitacao({ id: "destino-id" }, "usuario-id"),
+      ).rejects.toMatchObject({
+        codigoStatus: 404,
+        codigo: CodigoDeErro.USUARIO_DESTINO_INDISPONIVEL,
+        message: MENSAGENS.usuarioDestinoIndisponivel,
+      });
+
+      expect(usuariosRepository.buscarAlunoPorId).toHaveBeenCalledWith("destino-id");
+      expect(repository.enviarSolicitacao).not.toHaveBeenCalled();
+    });
+
+    test("deve lançar erro quando usuário destino está inativo", async () => {
+      repository.buscarSolicitacao.mockResolvedValue(null);
+      usuariosRepository.buscarAlunoPorId.mockResolvedValue(
+        criarAlunoVisibilidade({ status: "INATIVO" }),
+      );
+
+      await expect(
+        service.enviarSolicitacao({ id: "destino-id" }, "usuario-id"),
+      ).rejects.toMatchObject({
+        codigoStatus: 400,
+        codigo: CodigoDeErro.USUARIO_DESTINO_INDISPONIVEL,
+        message: MENSAGENS.usuarioDestinoInativo,
+      });
+
+      expect(repository.enviarSolicitacao).not.toHaveBeenCalled();
+    });
+
+    test("deve lançar erro quando usuário destino está invisível", async () => {
+      repository.buscarSolicitacao.mockResolvedValue(null);
+      usuariosRepository.buscarAlunoPorId.mockResolvedValue(
+        criarAlunoVisibilidade({ visivel: false }),
+      );
+
+      await expect(
+        service.enviarSolicitacao({ id: "destino-id" }, "usuario-id"),
+      ).rejects.toMatchObject({
+        codigoStatus: 400,
+        codigo: CodigoDeErro.USUARIO_DESTINO_INDISPONIVEL,
+        message: MENSAGENS.usuarioDestinoIndisponivel,
+      });
+
+      expect(repository.enviarSolicitacao).not.toHaveBeenCalled();
+    });
+
     test("deve enviar solicitação", async () => {
       repository.buscarSolicitacao.mockResolvedValue(null);
+      usuariosRepository.buscarAlunoPorId.mockResolvedValue(criarAlunoVisibilidade());
 
       repository.enviarSolicitacao.mockResolvedValue(criarAmizade("PENDENTE"));
 
       await service.enviarSolicitacao({ id: "destino-id" }, "usuario-id");
 
+      expect(usuariosRepository.buscarAlunoPorId).toHaveBeenCalledWith("destino-id");
       expect(repository.enviarSolicitacao).toHaveBeenCalledWith("usuario-id", "destino-id");
     });
   });
