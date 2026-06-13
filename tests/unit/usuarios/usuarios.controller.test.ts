@@ -3,9 +3,9 @@ import type { NextFunction, Request, Response } from "express";
 import { MENSAGENS } from "@/shared/constants/mensagens";
 import type { RespostaApiSucesso, RespostaPaginada } from "@/shared/types/api.types";
 
-import type { ResumoUsuarioDto, UsuarioPublicoDto } from "./dto/usuario.types";
-import { UsuariosController } from "./usuarios.controller";
-import type { UsuariosService } from "./usuarios.service";
+import type { ResumoUsuarioDto, UsuarioPublicoDto } from "../../../src/modules/usuarios/dto/usuario.types";
+import { UsuariosController } from "../../../src/modules/usuarios/usuarios.controller";
+import type { UsuariosService } from "../../../src/modules/usuarios/usuarios.service";
 
 function criarResponseMock<T>() {
   const json = jest.fn();

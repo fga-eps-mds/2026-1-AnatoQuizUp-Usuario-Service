@@ -1,7 +1,7 @@
 import { ErroAplicacao } from "@/shared/errors/erro-aplicacao";
 
-import type { UsuariosRepository } from "./usuarios.repository";
-import { UsuariosService } from "./usuarios.service";
+import type { UsuariosRepository } from "../../../src/modules/usuarios/usuarios.repository";
+import { UsuariosService } from "../../../src/modules/usuarios/usuarios.service";
 
 const alunoResumo = {
   id: "aluno-1",
