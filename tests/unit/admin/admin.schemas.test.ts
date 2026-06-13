@@ -2,11 +2,11 @@ import {
   schemaAlterarStatusUser,
   schemaBuscarUserPorId,
   schemaListarUsers,
-} from "./admin.schemas";
+} from "../../../src/modules/admin/admin.schemas";
 import {
   mapearStatusApiParaStatusBanco,
   STATUS_USUARIO_API,
-} from "./dto/alterar.status_user.types";
+} from "../../../src/modules/admin/dto/alterar.status_user.types";
 
 describe("schemas admin", () => {
   test("schemaListarUsers converte parametros de paginacao", () => {

@@ -3,9 +3,9 @@ import type { Usuario } from "@prisma/client";
 import { MENSAGENS } from "@/shared/constants/mensagens";
 import type { ErroAplicacao } from "@/shared/errors/erro-aplicacao";
 
-import { AdminService } from "./admin.service";
-import type { UserRepository } from "./admin.repository";
-import type { ContextoAdminDto } from "./dto/alterar.status_user.types";
+import { AdminService } from "../../../src/modules/admin/admin.service";
+import type { UserRepository } from "../../../src/modules/admin/admin.repository";
+import type { ContextoAdminDto } from "../../../src/modules/admin/dto/alterar.status_user.types";
 
 function criarUsuarioSemSenha(overrides: Partial<Omit<Usuario, "senha">> = {}): Omit<Usuario, "senha"> {
   return {

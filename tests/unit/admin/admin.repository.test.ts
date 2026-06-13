@@ -1,6 +1,6 @@
 import { prisma } from "@/config/db";
 
-import { UserRepository } from "./admin.repository";
+import { UserRepository } from "../../../src/modules/admin/admin.repository";
 
 jest.mock("@/config/db", () => ({
   prisma: {
