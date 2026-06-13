@@ -10,6 +10,7 @@
     "start": "npx prisma migrate deploy && node dist/src/server.js",
     "lint": "eslint . --ext .ts",
     "test": "jest",
+    "test:ci": "jest --coverage --runInBand",
     "format": "prettier . --write",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
