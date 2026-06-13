@@ -3,10 +3,10 @@ import type { NextFunction, Request, Response } from "express";
 import { MENSAGENS } from "@/shared/constants/mensagens";
 import type { RespostaApiSucesso } from "@/shared/types/api.types";
 
-import type { RegistrarProfessorDto } from "./dto/registrar.professor.types";
-import type { RespostaProfessorDto } from "./dto/resposta.professor.types";
-import { ProfessorAuthController } from "./professor.controller";
-import type { ProfessorAuthService } from "./professor.service";
+import type { RegistrarProfessorDto } from "../../../../src/modules/auth/professor/dto/registrar.professor.types";
+import type { RespostaProfessorDto } from "../../../../src/modules/auth/professor/dto/resposta.professor.types";
+import { ProfessorAuthController } from "../../../../src/modules/auth/professor/professor.controller";
+import type { ProfessorAuthService } from "../../../../src/modules/auth/professor/professor.service";
 
 function criarProfessorResposta(
   overrides: Partial<RespostaProfessorDto> = {},
