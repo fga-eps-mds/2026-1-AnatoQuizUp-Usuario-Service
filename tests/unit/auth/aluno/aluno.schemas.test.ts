@@ -55,6 +55,15 @@ describe("schemaRegistrarAluno", () => {
     });
   });
 
+  it("aceita letras acentuadas e espacos no nome completo", () => {
+    const resultado = schemaRegistrarAluno.safeParse({
+      ...payloadValido,
+      nome: "João Álvares",
+    });
+
+    expect(resultado.success).toBe(true);
+  });
+
   it("rejeita email invalido na consulta de disponibilidade", () => {
     expect(() => schemaDisponibilidadeEmailAluno.parse({ email: "email-invalido" })).toThrow();
   });
@@ -87,6 +96,8 @@ describe("schemaRegistrarAluno", () => {
     ["nickname com simbolo", { nickname: "joao!" }],
     ["nickname comecando com numero", { nickname: "1joao" }],
     ["nome vazio", { nome: "   " }],
+    ["nome com numero", { nome: "Joao Silva 123" }],
+    ["nome com caractere especial", { nome: "Joao@ Silva" }],
     ["data de nascimento ausente", { dataNascimento: undefined }],
     ["data de nascimento invalida", { dataNascimento: "30/12/2003" }],
     ["nacionalidade ausente", { nacionalidade: undefined }],

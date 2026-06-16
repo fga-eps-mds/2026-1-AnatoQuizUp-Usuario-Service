@@ -9,10 +9,15 @@ import {
 } from "@/modules/auth/aluno/aluno.constants";
 
 const FORMATO_DATA_ISO = /^\d{4}-\d{2}-\d{2}$/;
+const FORMATO_NOME_COMPLETO = /^[A-Za-zÀ-ÖØ-öø-ÿ ]+$/;
 
 function textoObrigatorio(max: number) {
   return z.string().trim().min(1).max(max);
 }
+
+const schemaNomeCompleto = textoObrigatorio(120).regex(FORMATO_NOME_COMPLETO, {
+  message: "Nome completo deve conter apenas letras e espacos.",
+});
 
 function dataIsoValida(valor: string) {
   if (!FORMATO_DATA_ISO.test(valor)) {
@@ -54,7 +59,7 @@ export const schemaDisponibilidadeEmailAluno = z.object({
 
 export const schemaRegistrarAluno = z
   .object({
-    nome: textoObrigatorio(120),
+    nome: schemaNomeCompleto,
     nickname: schemaNicknameAluno,
     email: schemaEmailAluno,
     senha: z.string().min(8),

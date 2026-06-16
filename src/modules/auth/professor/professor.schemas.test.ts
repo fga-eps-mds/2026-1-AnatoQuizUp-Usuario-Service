@@ -33,6 +33,37 @@ describe("schemaRegistrarProfessor", () => {
     }
   });
 
+  test("aceita letras acentuadas e espacos no nome completo", () => {
+    const resultado = schemaRegistrarProfessor.safeParse({
+      ...dadosValidos,
+      nome: "Hílmer José",
+    });
+
+    expect(resultado.success).toBe(true);
+  });
+
+  test.each(["Hilmer Neri 123", "Hilmer@ Neri"])(
+    "rejeita nome completo com caracteres invalidos: %s",
+    (nome) => {
+      const resultado = schemaRegistrarProfessor.safeParse({
+        ...dadosValidos,
+        nome,
+      });
+
+      expect(resultado.success).toBe(false);
+      if (!resultado.success) {
+        expect(resultado.error.issues).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              path: ["nome"],
+              message: "Nome completo deve conter apenas letras e espacos.",
+            }),
+          ]),
+        );
+      }
+    },
+  );
+
   test("rejeita email fora do dominio UnB", () => {
     const resultado = schemaRegistrarProfessor.safeParse({
       ...dadosValidos,
