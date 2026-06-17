@@ -1,5 +1,4 @@
 import bcrypt from "bcryptjs";
-import { Prisma } from "@prisma/client";
 
 import type { AlunoAuthRepository } from "@/modules/auth/aluno/aluno.repository";
 import type {
@@ -16,6 +15,7 @@ import { PAPEIS, STATUS_USUARIO } from "@/shared/constants/papeis";
 import { CodigoDeErro } from "@/shared/errors/codigos-de-erro";
 import { ErroAplicacao } from "@/shared/errors/erro-aplicacao";
 import { normalizarEspacos } from "@/shared/utils/formatacao.util";
+import { ehErroDeCampoUnicoDuplicado } from "@/shared/utils/prisma-erros.util";
 
 const BCRYPT_SALT_ROUNDS = 10;
 
@@ -33,31 +33,6 @@ function normalizarNickname(value: string) {
 
 function normalizarEmail(value: string) {
   return value.trim().toLowerCase();
-}
-
-function ehErroDeCampoUnicoDuplicado(error: unknown, campo: "email" | "nickname") {
-  if (!(error instanceof Prisma.PrismaClientKnownRequestError)) {
-    return false;
-  }
-
-  if (error.code === "P2002") {
-    const target = error.meta?.target;
-
-    if (Array.isArray(target)) {
-      return target.includes(campo);
-    }
-
-    return String(target ?? "").includes(campo);
-  }
-
-  if (error.code !== "P2010" || typeof error.meta !== "object" || error.meta === null) {
-    return false;
-  }
-
-  const meta = error.meta as Record<string, unknown>;
-  const mensagem = String(meta.message ?? "");
-
-  return meta.code === "23505" && mensagem.includes(`usuarios_${campo}_key`);
 }
 
 export type RespostaDisponibilidadeNicknameDto = {

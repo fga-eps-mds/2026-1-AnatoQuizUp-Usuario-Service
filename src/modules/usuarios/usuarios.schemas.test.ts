@@ -1,4 +1,5 @@
 import {
+  schemaAtualizarDadosPessoais,
   schemaBuscarAlunos,
   schemaBuscarUsuarioPorId,
   schemaBuscarUsuariosPorIds,
@@ -45,5 +46,48 @@ describe("schemas usuarios", () => {
   test("schemaBuscarUsuarioPorId rejeita id vazio", () => {
     expect(() => schemaBuscarUsuarioPorId.parse({ id: "   " })).toThrow();
     expect(() => schemaBuscarUsuarioPorId.parse({})).toThrow();
+  });
+
+  describe("schemaAtualizarDadosPessoais", () => {
+    test("aceita nome e nickname validos", () => {
+      expect(schemaAtualizarDadosPessoais.parse({
+        nome: " Joao Silva ",
+        nickname: " Joao_Silva ",
+      })).toEqual({
+        nome: "Joao Silva",
+        nickname: "joao_silva",
+      });
+    });
+
+    test("aceita apenas nome", () => {
+      expect(schemaAtualizarDadosPessoais.parse({ nome: " Maria Souza " })).toEqual({
+        nome: "Maria Souza",
+      });
+    });
+
+    test("aceita apenas nickname e normaliza para minusculas", () => {
+      expect(schemaAtualizarDadosPessoais.parse({ nickname: " MARIA_2026 " })).toEqual({
+        nickname: "maria_2026",
+      });
+    });
+
+    test("rejeita body vazio ou apenas campos fora do contrato", () => {
+      expect(() => schemaAtualizarDadosPessoais.parse({})).toThrow();
+      expect(() => schemaAtualizarDadosPessoais.parse({
+        email: "joao@example.com",
+      })).toThrow();
+    });
+
+    test("rejeita nickname invalido", () => {
+      expect(() => schemaAtualizarDadosPessoais.parse({
+        nickname: "123-invalido",
+      })).toThrow();
+    });
+
+    test("rejeita nome com caracteres invalidos", () => {
+      expect(() => schemaAtualizarDadosPessoais.parse({
+        nome: "Joao 123",
+      })).toThrow();
+    });
   });
 });

@@ -8,6 +8,8 @@ jest.mock("@/config/db", () => ({
     usuario: {
       findMany: jest.fn(),
       findFirst: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
       count: jest.fn(),
     },
   },
@@ -16,6 +18,8 @@ jest.mock("@/config/db", () => ({
 const transactionMock = prisma.$transaction as jest.Mock;
 const findManyMock = prisma.usuario.findMany as jest.Mock;
 const findFirstMock = prisma.usuario.findFirst as jest.Mock;
+const findUniqueMock = prisma.usuario.findUnique as jest.Mock;
+const updateMock = prisma.usuario.update as jest.Mock;
 const countMock = prisma.usuario.count as jest.Mock;
 
 const selectResumoUsuario = {
@@ -110,5 +114,40 @@ describe("UsuariosRepository", () => {
     findFirstMock.mockResolvedValue(null);
 
     await expect(repository.buscarPorIdPublico("inexistente")).resolves.toBeNull();
+  });
+
+  test("buscarIdPorNickname consulta usuario pelo nickname retornando apenas id", async () => {
+    const usuario = { id: "aluno-1" };
+    findUniqueMock.mockResolvedValue(usuario);
+
+    await expect(repository.buscarIdPorNickname("joao")).resolves.toBe(usuario);
+
+    expect(findUniqueMock).toHaveBeenCalledWith({
+      where: { nickname: "joao" },
+      select: { id: true },
+    });
+  });
+
+  test("atualizarDadosPessoais atualiza nome e nickname pelo id", async () => {
+    const usuarioAtualizado = {
+      id: "aluno-1",
+      nome: "Joao Silva",
+      nickname: "joao",
+    };
+    updateMock.mockResolvedValue(usuarioAtualizado);
+
+    await expect(repository.atualizarDadosPessoais("aluno-1", {
+      nome: "Joao Silva",
+      nickname: "joao",
+    })).resolves.toBe(usuarioAtualizado);
+
+    expect(updateMock).toHaveBeenCalledWith({
+      where: { id: "aluno-1" },
+      data: {
+        nome: "Joao Silva",
+        nickname: "joao",
+      },
+      select: selectResumoUsuario,
+    });
   });
 });

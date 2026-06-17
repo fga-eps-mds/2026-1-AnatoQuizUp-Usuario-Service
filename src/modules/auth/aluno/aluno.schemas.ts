@@ -15,7 +15,7 @@ function textoObrigatorio(max: number) {
   return z.string().trim().min(1).max(max);
 }
 
-const schemaNomeCompleto = textoObrigatorio(120).regex(FORMATO_NOME_COMPLETO, {
+export const schemaNomeCompleto = textoObrigatorio(120).regex(FORMATO_NOME_COMPLETO, {
   message: "Nome completo deve conter apenas letras e espacos.",
 });
 

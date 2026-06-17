@@ -56,6 +56,21 @@ export class UsuariosRepository {
     });
   }
 
+  async buscarIdPorNickname(nickname: string) {
+    return prisma.usuario.findUnique({
+      where: { nickname },
+      select: { id: true },
+    });
+  }
+
+  async atualizarDadosPessoais(id: string, dados: { nome?: string; nickname?: string }) {
+    return prisma.usuario.update({
+      where: { id },
+      data: dados,
+      select: selecionarResumoUsuario,
+    });
+  }
+
   
   async buscarAlunoPorId(id: string) {
     return prisma.usuario.findUnique({

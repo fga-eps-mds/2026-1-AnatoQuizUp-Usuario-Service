@@ -7,6 +7,7 @@ import { validarRequisicao } from "@/shared/middlewares/validacao.middleware";
 import { UsuariosController } from "./usuarios.controller";
 import { UsuariosRepository } from "./usuarios.repository";
 import {
+  schemaAtualizarDadosPessoais,
   schemaBuscarAlunos,
   schemaBuscarUsuarioPorId,
   schemaBuscarUsuariosPorIds,
@@ -33,6 +34,12 @@ usuariosRouter.get(
   apenasGestao,
   validarRequisicao(schemaBuscarUsuariosPorIds, "query"),
   usuariosController.buscarPorIds,
+);
+
+usuariosRouter.patch(
+  "/eu",
+  validarRequisicao(schemaAtualizarDadosPessoais),
+  usuariosController.atualizarDadosPessoais,
 );
 
 // Busca publica por id: acessivel a qualquer papel autenticado.

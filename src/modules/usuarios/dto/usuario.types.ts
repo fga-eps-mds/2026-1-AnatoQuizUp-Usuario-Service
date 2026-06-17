@@ -34,6 +34,11 @@ export type BuscarUsuarioPorIdParamsDto = {
   id: string;
 };
 
+export type AtualizarDadosPessoaisDto = {
+  nome?: string;
+  nickname?: string;
+};
+
 export function converterParaResumoUsuario(usuario: ResumoUsuarioDto): ResumoUsuarioDto {
   return usuario;
 }

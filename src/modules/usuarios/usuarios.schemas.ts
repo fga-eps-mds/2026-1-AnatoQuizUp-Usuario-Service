@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+import {
+  schemaNicknameAluno,
+  schemaNomeCompleto,
+} from "@/modules/auth/aluno/aluno.schemas";
+
 export const schemaBuscarAlunos = z.object({
   busca: z.string().trim().min(1).optional(),
   page: z.coerce.number().int().min(1).optional(),
@@ -23,3 +28,12 @@ export const schemaBuscarUsuariosPorIds = z.object({
 export const schemaBuscarUsuarioPorId = z.object({
   id: z.string().trim().min(1, "Id do usuario e obrigatorio"),
 });
+
+export const schemaAtualizarDadosPessoais = z
+  .object({
+    nome: schemaNomeCompleto.optional(),
+    nickname: schemaNicknameAluno.optional(),
+  })
+  .refine((dados) => dados.nome !== undefined || dados.nickname !== undefined, {
+    message: "Informe ao menos um campo para atualizar.",
+  });
