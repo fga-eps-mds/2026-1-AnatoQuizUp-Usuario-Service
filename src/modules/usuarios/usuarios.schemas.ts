@@ -37,3 +37,18 @@ export const schemaAtualizarDadosPessoais = z
   .refine((dados) => dados.nome !== undefined || dados.nickname !== undefined, {
     message: "Informe ao menos um campo para atualizar.",
   });
+
+export const schemaAlterarSenha = z
+  .object({
+    senhaAtual: z.string().min(1, "Informe a senha atual."),
+    novaSenha: z.string().min(8),
+    confirmacaoNovaSenha: z.string().min(8),
+  })
+  .refine((dados) => dados.novaSenha === dados.confirmacaoNovaSenha, {
+    message: "A confirmacao nao corresponde a nova senha.",
+    path: ["confirmacaoNovaSenha"],
+  })
+  .refine((dados) => dados.novaSenha !== dados.senhaAtual, {
+    message: "A nova senha deve ser diferente da senha atual.",
+    path: ["novaSenha"],
+  });

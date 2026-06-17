@@ -6,6 +6,7 @@ import { ErroAplicacao } from "@/shared/errors/erro-aplicacao";
 import type { RespostaApiSucesso, RespostaPaginada } from "@/shared/types/api.types";
 
 import type {
+  AlterarSenhaDto,
   AtualizarDadosPessoaisDto,
   BuscarAlunosQueryDto,
   BuscarUsuarioPorIdParamsDto,
@@ -88,6 +89,31 @@ export class UsuariosController {
       return response.status(200).json({
         mensagem: MENSAGENS.dadosPessoaisAtualizados,
         dados: usuario,
+      });
+    } catch (error) {
+      return next(error);
+    }
+  };
+
+  alterarSenha = async (
+    request: Request<unknown, unknown, AlterarSenhaDto>,
+    response: Response<RespostaApiSucesso<null>>,
+    next: NextFunction,
+  ) => {
+    try {
+      if (!request.usuario) {
+        throw new ErroAplicacao({
+          codigoStatus: 401,
+          codigo: CodigoDeErro.TOKEN_INVALIDO,
+          mensagem: MENSAGENS.tokenInvalido,
+        });
+      }
+
+      await this.usuariosService.alterarSenha(request.usuario.id, request.body);
+
+      return response.status(200).json({
+        mensagem: MENSAGENS.senhaAlterada,
+        dados: null,
       });
     } catch (error) {
       return next(error);

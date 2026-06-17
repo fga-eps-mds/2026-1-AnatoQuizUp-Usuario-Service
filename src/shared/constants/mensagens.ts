@@ -34,6 +34,8 @@ export const MENSAGENS = {
   nicknameDisponivel: "Nickname disponivel para uso.",
   instrucoesRecuperacaoSenhaEnviadas: "Se o email existir no sistema, enviamos instrucoes.",
   senhaRedefinida: "Senha redefinida com sucesso.",
+  senhaAlterada: "Senha alterada com sucesso.",
+  senhaAtualIncorreta: "Senha atual incorreta.",
   linkRedefinicaoSenhaInvalido: "Link expirado ou invalido.",
   estadosListados: "Estados listados com sucesso.",
   cidadesListadas: "Cidades listadas com sucesso.",

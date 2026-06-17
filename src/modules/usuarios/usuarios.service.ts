@@ -1,3 +1,5 @@
+import bcrypt from "bcryptjs";
+
 import { MENSAGENS } from "@/shared/constants/mensagens";
 import { CodigoDeErro } from "@/shared/errors/codigos-de-erro";
 import { ErroAplicacao } from "@/shared/errors/erro-aplicacao";
@@ -13,6 +15,7 @@ import {
 } from "@/shared/utils/prisma-erros.util";
 
 import type {
+  AlterarSenhaDto,
   AtualizarDadosPessoaisDto,
   BuscarAlunosQueryDto,
   ResumoUsuarioDto,
@@ -23,6 +26,8 @@ import {
   converterParaUsuarioPublico,
 } from "./dto/usuario.types";
 import type { UsuariosRepository } from "./usuarios.repository";
+
+const BCRYPT_SALT_ROUNDS = 10;
 
 export class UsuariosService {
   constructor(private readonly usuariosRepository: UsuariosRepository) {}
@@ -98,12 +103,51 @@ export class UsuariosService {
     }
   }
 
+  async alterarSenha(id: string, input: AlterarSenhaDto): Promise<void> {
+    const registro = await this.usuariosRepository.buscarSenhaHashPorId(id);
+
+    if (!registro) {
+      throw this.criarErroUsuarioNaoEncontrado(id);
+    }
+
+    const senhaAtualConfere = await bcrypt.compare(input.senhaAtual, registro.senha);
+
+    if (!senhaAtualConfere) {
+      throw new ErroAplicacao({
+        codigoStatus: 400,
+        codigo: CodigoDeErro.REQUISICAO_INVALIDA,
+        mensagem: MENSAGENS.senhaAtualIncorreta,
+      });
+    }
+
+    const novaSenhaHash = await bcrypt.hash(input.novaSenha, BCRYPT_SALT_ROUNDS);
+
+    try {
+      await this.usuariosRepository.atualizarSenha(id, novaSenhaHash);
+    } catch (error) {
+      if (ehRegistroNaoEncontrado(error)) {
+        throw this.criarErroUsuarioNaoEncontrado(id);
+      }
+
+      throw error;
+    }
+  }
+
   private criarErroNicknameDuplicado(nickname: string) {
     return new ErroAplicacao({
       codigoStatus: 409,
       codigo: CodigoDeErro.CONFLITO,
       mensagem: MENSAGENS.nicknameJaCadastrado,
       detalhes: { nickname },
+    });
+  }
+
+  private criarErroUsuarioNaoEncontrado(id: string) {
+    return new ErroAplicacao({
+      codigoStatus: 404,
+      codigo: CodigoDeErro.NAO_ENCONTRADO,
+      mensagem: MENSAGENS.usuarioNaoEncontrado,
+      detalhes: { id },
     });
   }
 }

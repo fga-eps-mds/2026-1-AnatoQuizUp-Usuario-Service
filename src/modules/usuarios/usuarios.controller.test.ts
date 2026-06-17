@@ -42,6 +42,7 @@ describe("UsuariosController", () => {
       buscarUsuariosPorIds: jest.fn(),
       buscarPorIdPublico: jest.fn(),
       atualizarDadosPessoais: jest.fn(),
+      alterarSenha: jest.fn(),
     } as unknown as jest.Mocked<UsuariosService>;
     controller = new UsuariosController(service);
     jest.clearAllMocks();
@@ -193,6 +194,70 @@ describe("UsuariosController", () => {
     const { response } = criarResponseMock<RespostaApiSucesso<ResumoUsuarioDto>>();
 
     await controller.atualizarDadosPessoais(request, response, next);
+
+    expect(next).toHaveBeenCalledWith(erro);
+  });
+
+  test("alterarSenha usa usuario autenticado e responde sucesso sem dados", async () => {
+    service.alterarSenha.mockResolvedValue(undefined);
+
+    const body = {
+      senhaAtual: "senhaAtual123",
+      novaSenha: "novaSenha123",
+      confirmacaoNovaSenha: "novaSenha123",
+    };
+    const request = {
+      usuario: { id: "aluno-1", email: "joao@example.com", papel: "ALUNO" },
+      body,
+    } as unknown as Request;
+    const { response, status, json } = criarResponseMock<RespostaApiSucesso<null>>();
+
+    await controller.alterarSenha(request, response, next);
+
+    expect(service.alterarSenha).toHaveBeenCalledWith("aluno-1", body);
+    expect(status).toHaveBeenCalledWith(200);
+    expect(json).toHaveBeenCalledWith({
+      mensagem: MENSAGENS.senhaAlterada,
+      dados: null,
+    });
+  });
+
+  test("alterarSenha encaminha erro quando usuario autenticado nao existe", async () => {
+    const request = {
+      body: {
+        senhaAtual: "senhaAtual123",
+        novaSenha: "novaSenha123",
+        confirmacaoNovaSenha: "novaSenha123",
+      },
+    } as unknown as Request;
+    const { response } = criarResponseMock<RespostaApiSucesso<null>>();
+
+    await controller.alterarSenha(request, response, next);
+
+    const erro = (next as jest.Mock).mock.calls[0][0];
+    expect(erro).toBeInstanceOf(ErroAplicacao);
+    expect(erro).toMatchObject({
+      codigoStatus: 401,
+      message: MENSAGENS.tokenInvalido,
+    });
+    expect(service.alterarSenha).not.toHaveBeenCalled();
+  });
+
+  test("alterarSenha encaminha erro do service", async () => {
+    const erro = new Error("falha");
+    service.alterarSenha.mockRejectedValue(erro);
+
+    const request = {
+      usuario: { id: "aluno-1", email: "joao@example.com", papel: "ALUNO" },
+      body: {
+        senhaAtual: "senhaAtual123",
+        novaSenha: "novaSenha123",
+        confirmacaoNovaSenha: "novaSenha123",
+      },
+    } as unknown as Request;
+    const { response } = criarResponseMock<RespostaApiSucesso<null>>();
+
+    await controller.alterarSenha(request, response, next);
 
     expect(next).toHaveBeenCalledWith(erro);
   });

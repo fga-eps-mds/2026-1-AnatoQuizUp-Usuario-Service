@@ -1,4 +1,5 @@
 import {
+  schemaAlterarSenha,
   schemaAtualizarDadosPessoais,
   schemaBuscarAlunos,
   schemaBuscarUsuarioPorId,
@@ -87,6 +88,80 @@ describe("schemas usuarios", () => {
     test("rejeita nome com caracteres invalidos", () => {
       expect(() => schemaAtualizarDadosPessoais.parse({
         nome: "Joao 123",
+      })).toThrow();
+    });
+  });
+
+  describe("schemaAlterarSenha", () => {
+    test("aceita body valido", () => {
+      expect(schemaAlterarSenha.parse({
+        senhaAtual: "senhaAtual123",
+        novaSenha: "novaSenha123",
+        confirmacaoNovaSenha: "novaSenha123",
+      })).toEqual({
+        senhaAtual: "senhaAtual123",
+        novaSenha: "novaSenha123",
+        confirmacaoNovaSenha: "novaSenha123",
+      });
+    });
+
+    test("rejeita nova senha menor que 8 caracteres", () => {
+      expect(() => schemaAlterarSenha.parse({
+        senhaAtual: "senhaAtual123",
+        novaSenha: "1234567",
+        confirmacaoNovaSenha: "1234567",
+      })).toThrow();
+    });
+
+    test("rejeita confirmacao diferente da nova senha no campo de confirmacao", () => {
+      const resultado = schemaAlterarSenha.safeParse({
+        senhaAtual: "senhaAtual123",
+        novaSenha: "novaSenha123",
+        confirmacaoNovaSenha: "outraSenha123",
+      });
+
+      expect(resultado.success).toBe(false);
+
+      if (resultado.success) {
+        throw new Error("Schema deveria rejeitar confirmacao divergente.");
+      }
+
+      expect(resultado.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: ["confirmacaoNovaSenha"],
+          }),
+        ]),
+      );
+    });
+
+    test("rejeita nova senha igual a senha atual no campo novaSenha", () => {
+      const resultado = schemaAlterarSenha.safeParse({
+        senhaAtual: "mesmaSenha123",
+        novaSenha: "mesmaSenha123",
+        confirmacaoNovaSenha: "mesmaSenha123",
+      });
+
+      expect(resultado.success).toBe(false);
+
+      if (resultado.success) {
+        throw new Error("Schema deveria rejeitar reuso da senha atual.");
+      }
+
+      expect(resultado.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: ["novaSenha"],
+          }),
+        ]),
+      );
+    });
+
+    test("rejeita senha atual vazia", () => {
+      expect(() => schemaAlterarSenha.parse({
+        senhaAtual: "",
+        novaSenha: "novaSenha123",
+        confirmacaoNovaSenha: "novaSenha123",
       })).toThrow();
     });
   });

@@ -1,6 +1,16 @@
+jest.mock("bcryptjs", () => ({
+  __esModule: true,
+  default: {
+    compare: jest.fn(),
+    hash: jest.fn(),
+  },
+}));
+
 import { Prisma } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 import { MENSAGENS } from "@/shared/constants/mensagens";
+import { CodigoDeErro } from "@/shared/errors/codigos-de-erro";
 import { ErroAplicacao } from "@/shared/errors/erro-aplicacao";
 
 import type { UsuariosRepository } from "./usuarios.repository";
@@ -46,6 +56,9 @@ function criarErroPrisma(code: string) {
   });
 }
 
+const compareMock = bcrypt.compare as unknown as jest.Mock<Promise<boolean>, [string, string]>;
+const hashMock = bcrypt.hash as unknown as jest.Mock<Promise<string>, [string, number]>;
+
 describe("UsuariosService", () => {
   let repository: jest.Mocked<UsuariosRepository>;
   let service: UsuariosService;
@@ -56,10 +69,14 @@ describe("UsuariosService", () => {
       buscarAlunosPorIds: jest.fn(),
       buscarIdPorNickname: jest.fn(),
       atualizarDadosPessoais: jest.fn(),
+      buscarSenhaHashPorId: jest.fn(),
+      atualizarSenha: jest.fn(),
       buscarPorIdPublico: jest.fn(),
     } as unknown as jest.Mocked<UsuariosRepository>;
     service = new UsuariosService(repository);
     jest.clearAllMocks();
+    compareMock.mockResolvedValue(true);
+    hashMock.mockResolvedValue("hash-novo");
   });
 
   test("buscarAlunos monta resposta paginada", async () => {
@@ -267,6 +284,77 @@ describe("UsuariosService", () => {
       await expect(service.atualizarDadosPessoais("aluno-1", {
         nome: "Joao Silva",
       })).rejects.toBe(erro);
+    });
+  });
+
+  describe("alterarSenha", () => {
+    test("altera senha quando senha atual confere", async () => {
+      repository.buscarSenhaHashPorId.mockResolvedValue({ senha: "hash-atual" });
+      repository.atualizarSenha.mockResolvedValue(undefined);
+
+      await expect(service.alterarSenha("aluno-1", {
+        senhaAtual: "senhaAtual123",
+        novaSenha: "novaSenha123",
+        confirmacaoNovaSenha: "novaSenha123",
+      })).resolves.toBeUndefined();
+
+      expect(repository.buscarSenhaHashPorId).toHaveBeenCalledWith("aluno-1");
+      expect(compareMock).toHaveBeenCalledWith("senhaAtual123", "hash-atual");
+      expect(hashMock).toHaveBeenCalledWith("novaSenha123", 10);
+      expect(repository.atualizarSenha).toHaveBeenCalledWith("aluno-1", "hash-novo");
+    });
+
+    test("retorna 400 quando senha atual nao confere", async () => {
+      repository.buscarSenhaHashPorId.mockResolvedValue({ senha: "hash-atual" });
+      compareMock.mockResolvedValue(false);
+
+      await expect(service.alterarSenha("aluno-1", {
+        senhaAtual: "senhaErrada",
+        novaSenha: "novaSenha123",
+        confirmacaoNovaSenha: "novaSenha123",
+      })).rejects.toMatchObject({
+        codigoStatus: 400,
+        codigo: CodigoDeErro.REQUISICAO_INVALIDA,
+        message: MENSAGENS.senhaAtualIncorreta,
+      });
+
+      expect(hashMock).not.toHaveBeenCalled();
+      expect(repository.atualizarSenha).not.toHaveBeenCalled();
+    });
+
+    test("retorna 404 quando usuario nao existe", async () => {
+      repository.buscarSenhaHashPorId.mockResolvedValue(null);
+
+      await expect(service.alterarSenha("aluno-inexistente", {
+        senhaAtual: "senhaAtual123",
+        novaSenha: "novaSenha123",
+        confirmacaoNovaSenha: "novaSenha123",
+      })).rejects.toMatchObject({
+        codigoStatus: 404,
+        codigo: CodigoDeErro.NAO_ENCONTRADO,
+        message: MENSAGENS.usuarioNaoEncontrado,
+        detalhes: { id: "aluno-inexistente" },
+      });
+
+      expect(compareMock).not.toHaveBeenCalled();
+      expect(hashMock).not.toHaveBeenCalled();
+      expect(repository.atualizarSenha).not.toHaveBeenCalled();
+    });
+
+    test("converte usuario removido durante atualizacao em 404", async () => {
+      repository.buscarSenhaHashPorId.mockResolvedValue({ senha: "hash-atual" });
+      repository.atualizarSenha.mockRejectedValue(criarErroPrisma("P2025"));
+
+      await expect(service.alterarSenha("aluno-1", {
+        senhaAtual: "senhaAtual123",
+        novaSenha: "novaSenha123",
+        confirmacaoNovaSenha: "novaSenha123",
+      })).rejects.toMatchObject({
+        codigoStatus: 404,
+        codigo: CodigoDeErro.NAO_ENCONTRADO,
+        message: MENSAGENS.usuarioNaoEncontrado,
+        detalhes: { id: "aluno-1" },
+      });
     });
   });
 });

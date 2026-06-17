@@ -150,4 +150,27 @@ describe("UsuariosRepository", () => {
       select: selectResumoUsuario,
     });
   });
+
+  test("buscarSenhaHashPorId consulta apenas o hash da senha", async () => {
+    const usuario = { senha: "hash-atual" };
+    findUniqueMock.mockResolvedValue(usuario);
+
+    await expect(repository.buscarSenhaHashPorId("aluno-1")).resolves.toBe(usuario);
+
+    expect(findUniqueMock).toHaveBeenCalledWith({
+      where: { id: "aluno-1" },
+      select: { senha: true },
+    });
+  });
+
+  test("atualizarSenha persiste somente o novo hash da senha", async () => {
+    updateMock.mockResolvedValue({});
+
+    await expect(repository.atualizarSenha("aluno-1", "hash-novo")).resolves.toBeUndefined();
+
+    expect(updateMock).toHaveBeenCalledWith({
+      where: { id: "aluno-1" },
+      data: { senha: "hash-novo" },
+    });
+  });
 });

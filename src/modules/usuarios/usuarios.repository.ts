@@ -71,6 +71,20 @@ export class UsuariosRepository {
     });
   }
 
+  async buscarSenhaHashPorId(id: string) {
+    return prisma.usuario.findUnique({
+      where: { id },
+      select: { senha: true },
+    });
+  }
+
+  async atualizarSenha(id: string, senhaHash: string) {
+    await prisma.usuario.update({
+      where: { id },
+      data: { senha: senhaHash },
+    });
+  }
+
   
   async buscarAlunoPorId(id: string) {
     return prisma.usuario.findUnique({

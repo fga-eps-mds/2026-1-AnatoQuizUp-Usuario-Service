@@ -39,6 +39,12 @@ export type AtualizarDadosPessoaisDto = {
   nickname?: string;
 };
 
+export type AlterarSenhaDto = {
+  senhaAtual: string;
+  novaSenha: string;
+  confirmacaoNovaSenha: string;
+};
+
 export function converterParaResumoUsuario(usuario: ResumoUsuarioDto): ResumoUsuarioDto {
   return usuario;
 }
