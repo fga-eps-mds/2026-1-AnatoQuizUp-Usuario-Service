@@ -6,6 +6,7 @@ export type ResumoAmigoDto = {
   nickname: string | null;
   curso: string | null;
   semestre: string | null;
+  visivel: boolean;
 };
 
 export type ResumoAmizadeDto = Amizade & {

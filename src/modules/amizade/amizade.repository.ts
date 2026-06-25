@@ -10,6 +10,7 @@ const selectResumoAmigo = {
   nickname: true,
   curso: true,
   semestre: true,
+  visivel: true,
 };
 
 export class AmizadesRepository {
