@@ -35,6 +35,10 @@ usuariosRouter.get(
   usuariosController.buscarPorIds,
 );
 
+// Lista de alunos com perfil visivel — base do ranking geral.
+// Acessivel a qualquer usuario autenticado (inclusive alunos).
+usuariosRouter.get("/visiveis", usuariosController.buscarVisiveis);
+
 // Busca publica por id: acessivel a qualquer papel autenticado.
 // Retorna apenas { id, nome, papel } — sem dados sensiveis.
 usuariosRouter.get(

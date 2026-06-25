@@ -20,6 +20,14 @@ export type UsuarioPublicoDto = {
   papel: Papel;
 };
 
+export type AlunoVisivelDto = {
+  id: string;
+  nome: string;
+  nickname: string | null;
+  curso: string | null;
+  semestre: string | null;
+};
+
 export type BuscarAlunosQueryDto = {
   busca?: string;
   page?: number;

@@ -1,9 +1,11 @@
 import type { NextFunction, Request, Response } from "express";
 
 import { MENSAGENS } from "@/shared/constants/mensagens";
+import { PAPEIS } from "@/shared/constants/papeis";
 import type { RespostaApiSucesso, RespostaPaginada } from "@/shared/types/api.types";
 
 import type {
+  AlunoVisivelDto,
   BuscarAlunosQueryDto,
   BuscarUsuarioPorIdParamsDto,
   BuscarUsuariosPorIdsQueryDto,
@@ -24,6 +26,27 @@ export class UsuariosController {
       const alunos = await this.usuariosService.buscarAlunos(request.query);
 
       return response.status(200).json(alunos);
+    } catch (error) {
+      return next(error);
+    }
+  };
+
+  buscarVisiveis = async (
+    request: Request<unknown, unknown, unknown, { incluirPrivados?: string }>,
+    response: Response<RespostaApiSucesso<AlunoVisivelDto[]>>,
+    next: NextFunction,
+  ) => {
+    try {
+      const papel = request.usuario?.papel;
+      const ehGestao = papel === PAPEIS.PROFESSOR || papel === PAPEIS.ADMINISTRADOR;
+      const incluirPrivados = ehGestao && request.query.incluirPrivados === "true";
+
+      const alunos = await this.usuariosService.buscarAlunosVisiveis(incluirPrivados);
+
+      return response.status(200).json({
+        mensagem: MENSAGENS.usuariosEncontrados,
+        dados: alunos,
+      });
     } catch (error) {
       return next(error);
     }

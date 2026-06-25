@@ -8,6 +8,7 @@ import {
 } from "@/shared/utils/paginacao.util";
 
 import type {
+  AlunoVisivelDto,
   BuscarAlunosQueryDto,
   ResumoUsuarioDto,
   UsuarioPublicoDto,
@@ -31,6 +32,10 @@ export class UsuariosService {
       dados: data.map(converterParaResumoUsuario),
       metadados: montarMetadadosPaginacao(paginacao, total),
     };
+  }
+
+  async buscarAlunosVisiveis(incluirPrivados = false): Promise<AlunoVisivelDto[]> {
+    return this.usuariosRepository.buscarAlunosVisiveis(incluirPrivados);
   }
 
   async buscarUsuariosPorIds(ids: string[]): Promise<ResumoUsuarioDto[]> {

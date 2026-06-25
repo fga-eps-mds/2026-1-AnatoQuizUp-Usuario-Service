@@ -44,6 +44,25 @@ export class UsuariosRepository {
     return { data, total };
   }
 
+  async buscarAlunosVisiveis(incluirPrivados = false) {
+    return prisma.usuario.findMany({
+      where: {
+        perfil: "ALUNO",
+        status: "ATIVO",
+        ...(incluirPrivados ? {} : { visivel: true }),
+        excluidoEm: null,
+      },
+      select: {
+        id: true,
+        nome: true,
+        nickname: true,
+        curso: true,
+        semestre: true,
+      },
+      orderBy: { nome: "asc" },
+    });
+  }
+
   async buscarAlunosPorIds(ids: string[]) {
     return prisma.usuario.findMany({
       where: {
