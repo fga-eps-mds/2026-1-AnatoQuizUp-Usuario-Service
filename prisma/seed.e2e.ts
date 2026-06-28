@@ -82,6 +82,7 @@ async function main() {
     where: { email: "joao@seed.com" },
     update: {},
     create: {
+      id: "aluno-joao",
       nome: "João Silva",
       nickname: "joaos",
       email: "joao@seed.com",
