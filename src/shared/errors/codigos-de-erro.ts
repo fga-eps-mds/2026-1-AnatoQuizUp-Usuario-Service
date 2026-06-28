@@ -1,3 +1,5 @@
+// Codigos de erro estaveis expostos ao cliente. Sao parte do contrato da API: o
+// front pode chavear comportamento por eles, entao nao devem mudar sem necessidade.
 export const CodigoDeErro = {
   REQUISICAO_INVALIDA: "REQUISICAO_INVALIDA",
   ERRO_DE_VALIDACAO: "ERRO_DE_VALIDACAO",
@@ -21,4 +23,5 @@ export const CodigoDeErro = {
   USUARIO_DESTINO_INDISPONIVEL: "USUARIO_DESTINO_INDISPONIVEL",
 } as const;
 
+// Tipo derivado: aceita exatamente um dos codigos acima, evitando strings soltas.
 export type ValorCodigoDeErro = (typeof CodigoDeErro)[keyof typeof CodigoDeErro];

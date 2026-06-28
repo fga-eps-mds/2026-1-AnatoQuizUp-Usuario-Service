@@ -31,12 +31,17 @@ import { amizadeRouter } from "@/modules/amizade/amizade.routes";
 
 
 
+// Montagem da aplicacao Express do Usuario-Service: middlewares globais, health
+// check publico, roteador da API protegido por token interno e tratamento de erros.
+
 const aplicacao = express();
 
+// Roteador agrupador de tudo que fica sob /api/v1.
 const roteadorApi = Router();
 
 
 
+// Middlewares globais: log HTTP, headers de seguranca (helmet), CORS e parse de JSON.
 aplicacao.use(loggerHttp);
 
 aplicacao.use(helmet());
@@ -47,6 +52,7 @@ aplicacao.use(express.json());
 
 
 
+// Health check publico (nao passa pelo token interno), usado por monitoramento.
 aplicacao.get("/health", (_request, response) => {
 
   return response.status(200).json({
@@ -71,8 +77,11 @@ aplicacao.get("/health", (_request, response) => {
 
 aplicacao.use("/api", middlewareTokenInterno);
 
+// Autenticacao fica antes das rotas protegidas; o proprio authRouter trata suas
+// rotas publicas (login/cadastro) internamente.
 roteadorApi.use("/autenticacao", authRouter);
 
+// A partir daqui todas as rotas exigem usuario autenticado.
 roteadorApi.use(middlewareAutenticacao);
 roteadorApi.use("/exemplos", exemploRouter);
 roteadorApi.use("/admin", adminRouter);
@@ -81,6 +90,7 @@ roteadorApi.use("/amizade", amizadeRouter);
 aplicacao.use("/api/v1", roteadorApi);
 
 
+// Qualquer rota nao reconhecida vira um 404 padronizado.
 aplicacao.use((_request, _response, next) => {
 
   next(
@@ -101,6 +111,7 @@ aplicacao.use((_request, _response, next) => {
 
 
 
+// Tratador central de erros sempre por ultimo, para capturar tudo o que veio antes.
 aplicacao.use(middlewareTratamentoErros);
 
 

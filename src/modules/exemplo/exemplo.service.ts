@@ -15,9 +15,11 @@ import {
 } from "@/shared/utils/paginacao.util";
 import { normalizarEspacos } from "@/shared/utils/formatacao.util";
 
+// Service do modulo de exemplo (CRUD de referencia, base para novos modulos).
 export class ExemploService {
   constructor(private readonly exemploRepository: ExemploRepository) {}
 
+  // Cria um exemplo, normalizando os textos antes de persistir.
   async criar(input: CriarExemploDto): Promise<RespostaExemploDto> {
     const exemploCriado = await this.exemploRepository.criar({
       nome: normalizarEspacos(input.nome),
@@ -27,6 +29,7 @@ export class ExemploService {
     return converterParaRespostaExemplo(exemploCriado);
   }
 
+  // Lista exemplos de forma paginada, convertendo cada registro para o DTO de resposta.
   async listar(query: ListarExemplosDto): Promise<RespostaPaginada<RespostaExemploDto>> {
     const paginacao = resolverParametrosPaginacao(query);
     const { data, total } = await this.exemploRepository.listar(paginacao);
@@ -37,6 +40,7 @@ export class ExemploService {
     };
   }
 
+  // Busca um exemplo por id; lanca 404 quando nao encontrado.
   async buscarPorId(id: string): Promise<RespostaExemploDto> {
     const exemplo = await this.exemploRepository.buscarPorId(id);
 

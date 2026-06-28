@@ -4,6 +4,9 @@ import { prisma } from "@/config/db";
 import type { CriarExemploDto } from "@/modules/exemplo/dto/criar.exemplo.types";
 import type { ParametrosPaginacao } from "@/shared/utils/paginacao.util";
 
+// Repository do modulo de exemplo: CRUD basico via SQL cru do Prisma.
+
+// Registro de exemplo como retornado pelo banco.
 type RegistroExemplo = {
   id: string;
   nome: string;
@@ -13,6 +16,7 @@ type RegistroExemplo = {
 };
 
 export class ExemploRepository {
+  // Insere um exemplo (id gerado na aplicacao) e retorna o registro criado.
   async criar(data: CriarExemploDto) {
     const id = randomUUID();
 
@@ -25,6 +29,7 @@ export class ExemploRepository {
     return registros[0];
   }
 
+  // Lista paginada + total na mesma transacao (count separado por ser SQL cru).
   async listar(paginacao: ParametrosPaginacao) {
     const consultaListagem = prisma.$queryRaw<RegistroExemplo[]>`
       SELECT id, nome, descricao, "createdAt", "updatedAt"
@@ -41,12 +46,14 @@ export class ExemploRepository {
 
     const [data, totalResultado] = await prisma.$transaction([consultaListagem, consultaTotal]);
 
+    // COUNT volta como bigint; converte para number (default 0 quando vazio).
     return {
       data,
       total: Number(totalResultado[0]?.total ?? 0n),
     };
   }
 
+  // Busca um exemplo por id (null quando nao existe).
   async buscarPorId(id: string) {
     const registros = await prisma.$queryRaw<RegistroExemplo[]>`
       SELECT id, nome, descricao, "createdAt", "updatedAt"

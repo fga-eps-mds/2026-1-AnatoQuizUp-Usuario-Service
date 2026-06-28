@@ -6,9 +6,17 @@ import type { ProfessorAuthService } from "@/modules/auth/professor/professor.se
 import { MENSAGENS } from "@/shared/constants/mensagens";
 import type { RespostaApiSucesso } from "@/shared/types/api.types";
 
+// Controller HTTP de cadastro de professor (entra pendente de aprovacao).
 export class ProfessorAuthController {
   constructor(private readonly professorAuthService: ProfessorAuthService) {}
 
+  /**
+   * POST registra um professor (responde 201; status inicial PENDENTE).
+   *
+   * @param request Requisicao com os dados de cadastro do professor no body.
+   * @param response Resposta com o professor criado (pendente de aprovacao).
+   * @param next Encaminha erros ao middleware central.
+   */
   registrar = async (
     request: Request<unknown, unknown, RegistrarProfessorDto>,
     response: Response<RespostaApiSucesso<{ usuario: RespostaProfessorDto }>>,

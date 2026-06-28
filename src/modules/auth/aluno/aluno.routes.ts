@@ -12,12 +12,15 @@ import {
 import { AlunoAuthService } from "@/modules/auth/aluno/aluno.service";
 import { validarRequisicao } from "@/shared/middlewares/validacao.middleware";
 
+// Rotas publicas de cadastro de aluno: checagens de disponibilidade, registro e os
+// sub-routers de apoio ao formulario (nacionalidades, opcoes academicas).
 const alunoAuthRepository = new AlunoAuthRepository();
 const alunoAuthService = new AlunoAuthService(alunoAuthRepository);
 const alunoAuthController = new AlunoAuthController(alunoAuthService);
 
 const alunoAuthRouter = Router();
 
+// Sub-routers que alimentam os selects do formulario de cadastro.
 alunoAuthRouter.use("/alunos/nacionalidades", alunoNacionalidadesRouter);
 alunoAuthRouter.use("/alunos/opcoes-academicas", alunoOpcoesAcademicasRouter);
 

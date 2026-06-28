@@ -6,8 +6,14 @@ import type { Papel } from "@/shared/constants/papeis";
 import { PAPEIS } from "@/shared/constants/papeis";
 import type { Status } from "@/shared/constants/status";
 
+// Repository de sessao: acessa diretamente o banco (via SQL cru do Prisma) para
+// autenticacao e gestao de refresh tokens. Faz a traducao entre o modelo do banco
+// (colunas em PT, perfil "ADMIN") e o modelo de dominio usado pela aplicacao.
+
+// Valor de perfil como esta gravado no banco.
 type PerfilBanco = "ALUNO" | "PROFESSOR" | "ADMIN";
 
+// Usuario no formato de dominio (usado pela camada de servico).
 export type UsuarioSessao = {
   id: string;
   nome: string;
@@ -42,6 +48,7 @@ export type RefreshTokenSessao = {
   revogadoEm: Date | null;
 };
 
+// Usuario exatamente como vem do banco (nomes de coluna e perfil originais).
 type UsuarioSessaoBanco = {
   id: string;
   nome: string;
@@ -75,6 +82,14 @@ type RefreshTokenSessaoBanco = {
   revogadoEm: Date | null;
 };
 
+/**
+ * Traduz o perfil do banco para o papel usado no dominio.
+ *
+ * No banco o administrador e gravado como "ADMIN"; no dominio usamos ADMINISTRADOR.
+ *
+ * @param perfil Perfil como gravado no banco.
+ * @returns Papel correspondente no dominio.
+ */
 function converterPerfilParaPapel(perfil: PerfilBanco): Papel {
   if (perfil === "ADMIN") {
     return PAPEIS.ADMINISTRADOR;
@@ -83,6 +98,15 @@ function converterPerfilParaPapel(perfil: PerfilBanco): Papel {
   return perfil;
 }
 
+/**
+ * Converte o registro cru do banco para o modelo de dominio UsuarioSessao.
+ *
+ * Renomeia campos (ex.: senha -> senhaHash, semestre -> periodo) e deriva
+ * semVinculoAcademico a partir dos campos academicos marcados como "nao se aplica".
+ *
+ * @param usuario Registro do usuario vindo do banco.
+ * @returns Usuario no formato de dominio.
+ */
 function converterUsuarioBanco(usuario: UsuarioSessaoBanco): UsuarioSessao {
   return {
     id: usuario.id,
@@ -116,6 +140,12 @@ function converterUsuarioBanco(usuario: UsuarioSessaoBanco): UsuarioSessao {
 }
 
 export class SessaoRepository {
+  /**
+   * Busca um usuario pelo email (usado no login).
+   *
+   * @param email Email informado na autenticacao.
+   * @returns Usuario de dominio, ou null se nao encontrado.
+   */
   async buscarUsuarioPorEmail(email: string): Promise<UsuarioSessao | null> {
     const registros = await prisma.$queryRaw<UsuarioSessaoBanco[]>`
       SELECT
@@ -152,6 +182,12 @@ export class SessaoRepository {
     return usuario ? converterUsuarioBanco(usuario) : null;
   }
 
+  /**
+   * Busca um usuario pelo id (usado ao renovar/validar a sessao).
+   *
+   * @param id Identificador do usuario.
+   * @returns Usuario de dominio, ou null se nao encontrado.
+   */
   async buscarUsuarioPorId(id: string): Promise<UsuarioSessao | null> {
     const registros = await prisma.$queryRaw<UsuarioSessaoBanco[]>`
       SELECT
@@ -188,6 +224,13 @@ export class SessaoRepository {
     return usuario ? converterUsuarioBanco(usuario) : null;
   }
 
+  /**
+   * Persiste um novo refresh token associado ao usuario.
+   *
+   * @param usuarioId Dono do token.
+   * @param token Valor do refresh token a salvar.
+   * @param expiraEm Momento de expiracao do token.
+   */
   async salvarRefreshToken(usuarioId: string, token: string, expiraEm: Date): Promise<void> {
     await prisma.$executeRaw`
       INSERT INTO refresh_tokens (
@@ -207,6 +250,12 @@ export class SessaoRepository {
     `;
   }
 
+  /**
+   * Recupera um refresh token pelo seu valor (para validar/rotacionar).
+   *
+   * @param token Valor do refresh token.
+   * @returns O token encontrado, ou null se nao existir.
+   */
   async buscarRefreshToken(token: string): Promise<RefreshTokenSessao | null> {
     const registros = await prisma.$queryRaw<RefreshTokenSessaoBanco[]>`
       SELECT
@@ -222,6 +271,19 @@ export class SessaoRepository {
     return registros[0] ?? null;
   }
 
+  /**
+   * Rotaciona o refresh token de forma atomica: revoga o antigo e cria um novo.
+   *
+   * Tudo roda numa transacao para evitar janela em que os dois tokens coexistam.
+   * Se o token antigo ja estava revogado/inexistente, nada e criado e retorna false
+   * (sinal de possivel reuso indevido de token).
+   *
+   * @param tokenAntigo Token atual a ser revogado.
+   * @param usuarioId Dono do token.
+   * @param novoToken Novo token a ser persistido.
+   * @param novoTokenExpiraEm Expiracao do novo token.
+   * @returns true se a rotacao ocorreu; false se o token antigo nao era valido.
+   */
   async rotacionarRefreshToken(
     tokenAntigo: string,
     usuarioId: string,
@@ -229,6 +291,7 @@ export class SessaoRepository {
     novoTokenExpiraEm: Date,
   ): Promise<boolean> {
     return prisma.$transaction(async (transacao) => {
+      // Revoga o token antigo apenas se ainda estiver ativo.
       const tokensRevogados = await transacao.$executeRaw`
         UPDATE refresh_tokens
         SET "revogadoEm" = NOW()
@@ -236,6 +299,7 @@ export class SessaoRepository {
           AND "revogadoEm" IS NULL
       `;
 
+      // Nenhuma linha afetada: token ja revogado ou inexistente, aborta a rotacao.
       if (tokensRevogados === 0) {
         return false;
       }
@@ -261,6 +325,13 @@ export class SessaoRepository {
     });
   }
 
+  /**
+   * Revoga um refresh token especifico do usuario (usado no logout).
+   *
+   * @param token Token a revogar.
+   * @param usuarioId Dono do token, para garantir que so o proprio revoga.
+   * @returns true se algum token ativo foi revogado; false caso contrario.
+   */
   async revogarRefreshToken(token: string, usuarioId: string): Promise<boolean> {
     const tokensRevogados = await prisma.$executeRaw`
       UPDATE refresh_tokens

@@ -7,9 +7,17 @@ import type { ListarExemplosDto } from "@/modules/exemplo/dto/listar.exemplos.ty
 import type { RespostaExemploDto } from "@/modules/exemplo/dto/resposta.exemplo.types";
 import type { RespostaApiSucesso, RespostaPaginada } from "@/shared/types/api.types";
 
+// Controller HTTP do modulo de exemplo (CRUD de referencia).
 export class ExemploController {
   constructor(private readonly exemploService: ExemploService) {}
 
+  /**
+   * POST cria um exemplo (responde 201 com o registro criado).
+   *
+   * @param request Requisicao com os dados do exemplo no body.
+   * @param response Resposta com o exemplo criado.
+   * @param next Encaminha erros ao middleware central.
+   */
   criar = async (
     request: Request<unknown, unknown, CriarExemploDto>,
     response: Response<RespostaApiSucesso<RespostaExemploDto>>,
@@ -27,6 +35,13 @@ export class ExemploController {
     }
   };
 
+  /**
+   * GET lista paginada de exemplos.
+   *
+   * @param request Requisicao com parametros de paginacao na query.
+   * @param response Resposta paginada de exemplos.
+   * @param next Encaminha erros ao middleware central.
+   */
   listar = async (
     request: Request<unknown, unknown, unknown, ListarExemplosDto>,
     response: Response<RespostaPaginada<RespostaExemploDto>>,
@@ -41,6 +56,13 @@ export class ExemploController {
     }
   };
 
+  /**
+   * GET busca um exemplo por id (404 se nao existir).
+   *
+   * @param request Requisicao com o id do exemplo nos params.
+   * @param response Resposta com o exemplo encontrado.
+   * @param next Encaminha erros ao middleware central.
+   */
   buscarPorId = async (
     request: Request<{ id: string }>,
     response: Response<RespostaApiSucesso<RespostaExemploDto>>,
