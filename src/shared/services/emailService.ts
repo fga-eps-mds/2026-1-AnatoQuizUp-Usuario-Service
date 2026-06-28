@@ -3,13 +3,17 @@ import { BrevoClient } from "@getbrevo/brevo";
 import { env } from "@/config/env";
 import { logger } from "@/config/logger";
 
+// Servico de envio de emails transacionais via Brevo. Hoje cobre o fluxo de
+// redefinicao de senha, gerando o conteudo em HTML e texto puro.
+
+// Cliente Brevo unico, configurado com timeout e retries para chamadas a API.
 const clienteBrevo = new BrevoClient({
   apiKey: env.BREVO_API_KEY,
   timeoutInSeconds: 30,
   maxRetries: 2,
 });
 
-// Versão em HTML e texto puro para compatibilidade com clientes de email que nao renderizam HTML
+// Versao em texto puro do email, para clientes que nao renderizam HTML.
 function criarConteudoTextoRedefinicaoSenha(linkRedefinicao: string) {
   return [
     "AnatoQuizUp",
@@ -23,6 +27,7 @@ function criarConteudoTextoRedefinicaoSenha(linkRedefinicao: string) {
   ].join("\n");
 }
 
+// Versao em HTML do email de redefinicao, com o link embutido em botao e em texto.
 function criarConteudoHtmlRedefinicaoSenha(linkRedefinicao: string) {
   return `
     <html lang="pt-BR">
@@ -72,6 +77,16 @@ function criarConteudoHtmlRedefinicaoSenha(linkRedefinicao: string) {
   `;
 }
 
+/**
+ * Envia o email de redefinicao de senha para o destinatario.
+ *
+ * Monta o conteudo HTML + texto e dispara via Brevo. Sucesso e falha sao logados;
+ * em caso de erro, lanca uma excecao generica (sem vazar detalhes do provedor).
+ *
+ * @param destinatario Email de quem solicitou a redefinicao.
+ * @param linkRedefinicao Link com o token de redefinicao.
+ * @throws Error quando o envio pelo provedor falha.
+ */
 export async function enviarEmailRedefinicaoSenha(
   destinatario: string,
   linkRedefinicao: string,
