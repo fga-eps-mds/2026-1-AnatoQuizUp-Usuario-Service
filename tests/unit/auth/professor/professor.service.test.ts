@@ -3,9 +3,9 @@ import { Prisma } from "@prisma/client";
 import { MENSAGENS } from "@/shared/constants/mensagens";
 import type { ErroAplicacao } from "@/shared/errors/erro-aplicacao";
 
-import type { RegistroProfessor } from "./dto/resposta.professor.types";
-import type { ProfessorAuthRepository } from "./professor.repository";
-import { ProfessorAuthService } from "./professor.service";
+import type { RegistroProfessor } from "../../../../src/modules/auth/professor/dto/resposta.professor.types";
+import type { ProfessorAuthRepository } from "../../../../src/modules/auth/professor/professor.repository";
+import { ProfessorAuthService } from "../../../../src/modules/auth/professor/professor.service";
 
 const inputValido = {
   nome: " Hilmer Rodrigues Neri ",

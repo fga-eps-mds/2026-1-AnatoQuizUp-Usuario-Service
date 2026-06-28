@@ -29,7 +29,8 @@ jobs:
     env:
       NODE_ENV: test
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/anatoquizup_test?schema=public
-      JWT_SECRET: ci-test-secret
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+      INTERNAL_TOKEN: ${{ secrets.INTERNAL_TOKEN }}
 
     steps:
       - name: Checkout
@@ -51,6 +52,9 @@ jobs:
 
       - name: Gerar Prisma Client
         run: npm run prisma:generate
+
+      - name: Criar tabelas no banco de dados do CI
+        run: npx prisma db push
 
       - name: Build do projeto
         run: |
@@ -93,4 +97,3 @@ jobs:
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-

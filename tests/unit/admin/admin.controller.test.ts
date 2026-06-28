@@ -3,11 +3,11 @@ import type { NextFunction, Request, Response } from "express";
 import { MENSAGENS } from "@/shared/constants/mensagens";
 import type { RespostaApiSucesso, RespostaPaginada } from "@/shared/types/api.types";
 
-import { AdminController } from "./admin.controller";
-import type { AdminService } from "./admin.service";
-import type { AlterarStatusUserDto } from "./dto/alterar.status_user.types";
-import type { ListarUsersDto, ListarUsersQueryDto } from "./dto/listar.users.types";
-import type { RespostaUserDto } from "./dto/resposta.user.types";
+import { AdminController } from "../../../src/modules/admin/admin.controller";
+import type { AdminService } from "../../../src/modules/admin/admin.service";
+import type { AlterarStatusUserDto } from "../../../src/modules/admin/dto/alterar.status_user.types";
+import type { ListarUsersDto, ListarUsersQueryDto } from "../../../src/modules/admin/dto/listar.users.types";
+import type { RespostaUserDto } from "../../../src/modules/admin/dto/resposta.user.types";
 
 function criarUsuarioResposta(overrides: Partial<RespostaUserDto> = {}): RespostaUserDto {
   return {

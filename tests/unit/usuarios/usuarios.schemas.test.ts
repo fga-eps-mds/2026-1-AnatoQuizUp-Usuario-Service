@@ -2,7 +2,7 @@ import {
   schemaBuscarAlunos,
   schemaBuscarUsuarioPorId,
   schemaBuscarUsuariosPorIds,
-} from "./usuarios.schemas";
+} from "../../../src/modules/usuarios/usuarios.schemas";
 
 describe("schemas usuarios", () => {
   test("schemaBuscarAlunos converte paginacao e normaliza busca", () => {
