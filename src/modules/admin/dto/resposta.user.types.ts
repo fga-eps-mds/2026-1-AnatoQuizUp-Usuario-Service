@@ -3,6 +3,7 @@ import type { Usuario } from "@prisma/client";
 import type { Nullable } from "@/shared/types/comuns.types";
 import { converterParaIsoString } from "@/shared/utils/dados.util";
 
+// DTO de usuario para o painel admin (campos completos, datas em ISO, sem senha).
 export type RespostaUserDto = {
   id: string;
   nome: string;
@@ -27,6 +28,7 @@ export type RespostaUserDto = {
   excluidoEm: Nullable<string>;
 };
 
+// Converte o registro do banco no DTO de resposta, normalizando datas para ISO.
 export function converterParaRespostaUser(
   usuario: Omit<Usuario, "senha">,
 ): RespostaUserDto {
