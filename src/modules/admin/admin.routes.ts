@@ -11,6 +11,8 @@ import {
   schemaListarUsers,
 } from "./admin.schemas";
 
+// Rotas de administracao de usuarios. Compoe as dependencias e registra os endpoints
+// de listagem, detalhe e alteracao de status, cada um com validacao por Zod.
 const userRepository = new UserRepository();
 const adminService = new AdminService(userRepository);
 const adminController = new AdminController(adminService);

@@ -8,9 +8,17 @@ import type {
 import { MENSAGENS } from "@/shared/constants/mensagens";
 import type { RespostaApiSucesso } from "@/shared/types/api.types";
 
+// Controller HTTP do fluxo de recuperacao de senha (solicitar e redefinir).
 export class RecuperarSenhaController {
   constructor(private readonly recuperarSenhaService: RecuperarSenhaService) {}
 
+  /**
+   * POST solicita a recuperacao; responde 200 generico mesmo se o email nao existir.
+   *
+   * @param request Requisicao com o email no body.
+   * @param response Resposta generica de confirmacao.
+   * @param next Encaminha erros ao middleware central.
+   */
   forgotPassword = async (
     request: Request<unknown, unknown, SolicitarRecuperacaoSenhaDto>,
     response: Response<RespostaApiSucesso<null>>,
@@ -28,6 +36,13 @@ export class RecuperarSenhaController {
     }
   };
 
+  /**
+   * POST redefine a senha a partir de um token valido recebido por email.
+   *
+   * @param request Requisicao com o token e a nova senha no body.
+   * @param response Resposta de confirmacao da redefinicao.
+   * @param next Encaminha erros ao middleware central.
+   */
   resetPassword = async (
     request: Request<unknown, unknown, RedefinirSenhaDto>,
     response: Response<RespostaApiSucesso<null>>,

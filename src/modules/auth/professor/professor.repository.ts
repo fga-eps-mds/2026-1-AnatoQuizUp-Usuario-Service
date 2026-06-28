@@ -4,6 +4,10 @@ import { prisma } from "@/config/db";
 import type { RegistroProfessor } from "@/modules/auth/professor/dto/resposta.professor.types";
 import type { Papel, StatusUsuario } from "@/shared/constants/papeis";
 
+// Repository de cadastro de professor: acesso ao banco via SQL cru do Prisma, com
+// traducao entre as colunas do banco e o modelo de dominio do professor.
+
+// Dados necessarios para inserir um professor (ja normalizados pelo service).
 export type CriarProfessorData = {
   nome: string;
   email: string;
@@ -16,6 +20,7 @@ export type CriarProfessorData = {
   status: StatusUsuario;
 };
 
+// Projecoes minimas usadas so para checar duplicidade de email/siape.
 type ProfessorPorEmail = {
   id: string;
   email: string;
@@ -26,6 +31,7 @@ type ProfessorPorSiape = {
   siape: string;
 };
 
+// Registro de professor exatamente como retornado pelo banco.
 type RegistroProfessorBanco = {
   id: string;
   nome: string;
@@ -40,6 +46,7 @@ type RegistroProfessorBanco = {
   atualizadoEm: Date;
 };
 
+// Converte o registro cru do banco para o modelo de dominio (perfil -> papel).
 function converterRegistroBanco(registro: RegistroProfessorBanco): RegistroProfessor {
   return {
     id: registro.id,
@@ -57,6 +64,12 @@ function converterRegistroBanco(registro: RegistroProfessorBanco): RegistroProfe
 }
 
 export class ProfessorAuthRepository {
+  /**
+   * Busca minima por email para checar se ja existe cadastro.
+   *
+   * @param email Email a procurar.
+   * @returns id/email do professor, ou null.
+   */
   async buscarPorEmail(email: string): Promise<ProfessorPorEmail | null> {
     const registros = await prisma.$queryRaw<ProfessorPorEmail[]>`
       SELECT id, email
@@ -68,6 +81,12 @@ export class ProfessorAuthRepository {
     return registros[0] ?? null;
   }
 
+  /**
+   * Busca minima por SIAPE para checar duplicidade da matricula funcional.
+   *
+   * @param siape SIAPE a procurar.
+   * @returns id/siape do professor, ou null.
+   */
   async buscarPorSiape(siape: string): Promise<ProfessorPorSiape | null> {
     const registros = await prisma.$queryRaw<ProfessorPorSiape[]>`
       SELECT id, siape
@@ -79,6 +98,15 @@ export class ProfessorAuthRepository {
     return registros[0] ?? null;
   }
 
+  /**
+   * Insere um novo professor e retorna o registro convertido para o dominio.
+   *
+   * Gera o id (UUID), usa RETURNING para evitar SELECT extra e converte as strings
+   * de papel/status para os enums do Postgres via cast.
+   *
+   * @param data Dados ja normalizados do professor.
+   * @returns Professor criado, no formato de dominio.
+   */
   async criar(data: CriarProfessorData): Promise<RegistroProfessor> {
     const id = randomUUID();
 

@@ -1,8 +1,12 @@
+// Mensagens fixas reutilizadas nas respostas da API, centralizadas para manter o
+// texto consistente e facilitar ajustes em um unico lugar.
 export const MENSAGENS = {
+  // Gerais e de infraestrutura (status, erros e roteamento).
   apiEmExecucao: "API do AnatoQuizUp em execucao.",
   erroInterno: "Ocorreu um erro interno inesperado.",
   erroValidacao: "Falha na validacao da requisicao.",
   rotaNaoEncontrada: "A rota solicitada nao foi encontrada.",
+  // Modulo de exemplo (CRUD de referencia).
   exemploCriado: "Exemplo criado com sucesso.",
   exemploNaoEncontrado: "Exemplo nao encontrado.",
   exemploEncontrado: "Exemplo encontrado com sucesso.",
@@ -13,6 +17,7 @@ export const MENSAGENS = {
   questaoNaoEncontrada: "Questao nao encontrada.",
   questaoAlternativasObrigatorias: "A questao deve possuir alternativas validas.",
   questaoGabaritoObrigatorio: "A questao deve possuir gabarito definido.",
+  // Usuarios e administracao (consultas e alteracao de status).
   usuarioNaoEncontrado: "Usuario nao encontrado.",
   usuarioEncontrado: "Usuario encontrado com sucesso.",
   usuariosEncontrados: "Usuarios encontrados com sucesso.",
@@ -22,6 +27,7 @@ export const MENSAGENS = {
   usuarioAdminNaoPodeSerAlterado: "Nao e permitido alterar o status de outro administrador.",
   contextoAdminObrigatorio:
     "O usuario autenticado precisa ser ADMIN para esta operacao.",
+  // Cadastro de aluno/professor e checagens de disponibilidade.
   usuarioCadastrado: "Usuario cadastrado com sucesso.",
   emailJaCadastrado: "Email ja cadastrado.",
   siapeJaCadastrado: "SIAPE ja cadastrado.",
@@ -31,12 +37,14 @@ export const MENSAGENS = {
   opcoesAcademicasListadas: "Opcoes academicas listadas com sucesso.",
   emailDisponivel: "Email disponivel para uso.",
   nicknameDisponivel: "Nickname disponivel para uso.",
+  // Recuperacao de senha e localidades de apoio ao cadastro.
   instrucoesRecuperacaoSenhaEnviadas: "Se o email existir no sistema, enviamos instrucoes.",
   senhaRedefinida: "Senha redefinida com sucesso.",
   linkRedefinicaoSenhaInvalido: "Link expirado ou invalido.",
   estadosListados: "Estados listados com sucesso.",
   cidadesListadas: "Cidades listadas com sucesso.",
   origemCorsNaoPermitida: "Origem nao permitida pelo CORS.",
+  // Sessao/autenticacao (login, renovacao e bloqueios por status).
   loginRealizado: "Login realizado com sucesso.",
   sessaoRenovada: "Sessao renovada com sucesso.",
   usuarioAutenticadoEncontrado: "Usuario autenticado retornado com sucesso.",
@@ -48,6 +56,7 @@ export const MENSAGENS = {
   autenticacaoNaoImplementada: "O middleware de autenticacao ainda nao foi implementado.",
   permissaoPorPapelNaoImplementada:
     "O middleware de permissao por papel ainda nao foi implementado.",
+  // Amizades (solicitacoes, convites e visibilidade).
   fornecaUmNomeDeUsuario: "Forneça um nome de usuário para a busca",
   solicitacaoParaSiMesmo: "Nao e possivel enviar solicitacao de amizade para si mesmo.",
   usuarioDestinoIndisponivel: "Usuario destino nao esta disponivel para receber solicitacao de amizade.",

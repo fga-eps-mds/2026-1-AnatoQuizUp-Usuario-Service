@@ -13,12 +13,18 @@ import { AmizadesRepository } from "./amizade.repository";
 import { AmizadesService } from "./amizade.service";
 import { UsuariosRepository } from "../usuarios/usuarios.repository";
 
+// Rotas de amizade. Monta a cadeia de dependencias (repositories -> service ->
+// controller) e registra cada endpoint com: controle de papel + validacao do
+// payload (Zod) + handler. Todas restritas a ALUNO/ADMIN.
+
+// Composicao manual das dependencias do modulo (injecao por construtor).
 const amizadesRepository = new AmizadesRepository();
 const usuarioRepository = new UsuariosRepository();
 const amizadesService = new AmizadesService(amizadesRepository, usuarioRepository);
 const amizadesController = new AmizadesController(amizadesService);
 
 const amizadeRouter = Router();
+// Guarda de papel reutilizada em todas as rotas deste modulo.
 const permiteAlunosEAdmin = middlewarePapeis(PAPEIS.ALUNO, PAPEIS.ADMINISTRADOR);
 
 // lista amigos
