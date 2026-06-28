@@ -1,5 +1,9 @@
 import type { Papel, StatusUsuario } from "@/shared/constants/papeis";
 
+// DTOs do professor: RegistroProfessor (dominio) e RespostaProfessorDto (API), com
+// o conversor que serializa as datas para string ISO.
+
+// Professor no formato de dominio (datas como Date).
 export type RegistroProfessor = {
   id: string;
   nome: string;
@@ -14,6 +18,7 @@ export type RegistroProfessor = {
   atualizadoEm: Date;
 };
 
+// Professor no formato de resposta da API (datas como string ISO).
 export type RespostaProfessorDto = {
   id: string;
   nome: string;
@@ -28,6 +33,7 @@ export type RespostaProfessorDto = {
   atualizadoEm: string;
 };
 
+// Converte o professor de dominio no DTO de resposta da API.
 export function converterParaRespostaProfessor(
   professor: RegistroProfessor,
 ): RespostaProfessorDto {
