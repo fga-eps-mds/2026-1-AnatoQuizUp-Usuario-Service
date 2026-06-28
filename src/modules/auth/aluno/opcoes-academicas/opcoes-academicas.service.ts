@@ -7,7 +7,10 @@ import {
   VALOR_NAO_SE_APLICA,
 } from "@/shared/constants/opcoes-academicas";
 
+// Service de opcoes academicas: agrega as listas (escolaridade, instituicao, curso,
+// periodo) e o marcador "nao se aplica" para os selects do cadastro de aluno.
 export class AlunoOpcoesAcademicasService {
+  // Monta o objeto de opcoes, copiando cada lista de constantes (somente leitura).
   listarOpcoesAcademicas(): OpcoesAcademicasAlunoDto {
     return {
       escolaridades: [...ESCOLARIDADES_ALUNO_OPCOES],

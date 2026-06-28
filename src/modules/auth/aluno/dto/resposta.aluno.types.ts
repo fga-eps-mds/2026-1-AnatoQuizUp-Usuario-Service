@@ -1,5 +1,9 @@
 import type { Papel, StatusUsuario } from "@/shared/constants/papeis";
 
+// DTOs do aluno: RegistroAluno (dominio, com datas Date) e RespostaAlunoDto (API,
+// com datas em string), alem do conversor entre eles.
+
+// Aluno no formato de dominio, como vem do repository.
 export type RegistroAluno = {
   id: string;
   nome: string;
@@ -20,6 +24,7 @@ export type RegistroAluno = {
   updatedAt: Date;
 };
 
+// Aluno no formato de resposta da API (datas serializadas como string).
 export type RespostaAlunoDto = {
   id: string;
   nome: string;
@@ -40,6 +45,7 @@ export type RespostaAlunoDto = {
   updatedAt: string;
 };
 
+// Converte o aluno de dominio em DTO de resposta (dataNascimento so a parte de data).
 export function converterParaRespostaAluno(aluno: RegistroAluno): RespostaAlunoDto {
   return {
     id: aluno.id,
